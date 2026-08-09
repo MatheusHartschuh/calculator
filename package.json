@@ -1,0 +1,17 @@
+{
+  "name": "calculadora-monorepo",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix frontend start",
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "test": "npm --prefix frontend test && docker compose build backend",
+    "coverage:frontend": "npm --prefix frontend run coverage",
+    "coverage:backend": "docker run --rm -v \"$(pwd)/backend:/src\" -w /src golang:1.22-alpine sh -lc \"/usr/local/go/bin/go test -coverprofile=coverage.out ./... && /usr/local/go/bin/go tool cover -func=coverage.out && /usr/local/go/bin/go tool cover -html=coverage.out -o coverage.html\"",
+    "coverage": "npm run coverage:frontend && npm run coverage:backend",
+    "test:frontend": "npm --prefix frontend test",
+    "test:backend": "docker compose build backend",
+    "preview": "npm --prefix frontend run preview"
+  }
+}

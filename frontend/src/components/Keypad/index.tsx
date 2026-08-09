@@ -1,0 +1,79 @@
+import React from "react";
+import Button from "../Button";
+import { KeypadContainer, KeypadSpacer } from "./styles";
+
+type ButtonType = "operator" | "action" | "number" | "func" | "memory";
+
+type KeypadProps = {
+  onButtonClick: (key: string) => void;
+  disabled?: boolean;
+};
+
+const Keypad: React.FC<KeypadProps> = ({ onButtonClick, disabled }) => {
+  const keypadLayout: ({ label: string; type?: ButtonType } | null)[][] = [
+    [
+      { label: "MC", type: "memory" },
+      { label: "MR", type: "memory" },
+      { label: "M+", type: "memory" },
+      { label: "M-", type: "memory" },
+    ],
+    [
+      { label: "AC", type: "action" },
+      { label: "C", type: "action" },
+      { label: "+/-", type: "action" },
+      { label: "%", type: "func" },
+    ],
+    [
+      { label: "7", type: "number" },
+      { label: "8", type: "number" },
+      { label: "9", type: "number" },
+      { label: "*", type: "operator" },
+    ],
+    [
+      { label: "4", type: "number" },
+      { label: "5", type: "number" },
+      { label: "6", type: "number" },
+      { label: "-", type: "operator" },
+    ],
+    [
+      { label: "1", type: "number" },
+      { label: "2", type: "number" },
+      { label: "3", type: "number" },
+      { label: "+", type: "operator" },
+    ],
+    [
+      { label: "0", type: "number" },
+      { label: ",", type: "number" },
+      { label: "=", type: "action" },
+      { label: "√", type: "func" },
+    ],
+    [
+      { label: "x²", type: "func" },
+      { label: "^", type: "operator" },
+      null,
+      null,
+    ],
+  ];
+
+  return (
+    <KeypadContainer>
+      {keypadLayout.flatMap((row, rowIndex) =>
+        row.map((btn, colIndex) =>
+          btn ? (
+            <Button
+              key={`${rowIndex}-${colIndex}-${btn.label}`}
+              label={btn.label}
+              onClick={onButtonClick}
+              type={btn.type}
+              disabled={disabled}
+            />
+          ) : (
+            <KeypadSpacer key={`${rowIndex}-${colIndex}`} aria-hidden="true" />
+          ),
+        ),
+      )}
+    </KeypadContainer>
+  );
+};
+
+export default Keypad;
