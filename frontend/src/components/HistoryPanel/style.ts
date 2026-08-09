@@ -16,9 +16,25 @@ export const PanelContainer = styled.div`
 export const Title = styled.h4`
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: ${theme.spacing(1)};
   margin: 0 0 0.5rem 0;
   text-align: center;
+`;
+
+export const ClearButton = styled.button`
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 4px 10px;
+  background: ${theme.colors.yellow};
+  color: ${theme.colors.text};
+  font-size: ${theme.font.size.small};
+`;
+
+export const EmptyState = styled.div`
+  text-align: center;
+  color: ${theme.colors.text};
 `;
 
 export const Item = styled.div`

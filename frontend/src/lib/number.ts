@@ -1,4 +1,4 @@
-// Limpa a representação textual de um número para uso no display e no histórico.
+// Cleans a number's text representation for use in the display and history.
 export function cleanNumberString(value: number, fractionDigits = 12): string {
   if (!Number.isFinite(value)) {
     return "Erro";
@@ -15,7 +15,7 @@ export function cleanNumberString(value: number, fractionDigits = 12): string {
   return normalized.toString();
 }
 
-// Converte a string interna da calculadora em número.
+// Converts the calculator's internal string to a number.
 export function parseNumber(value: string): number | null {
   const trimmed = value.trim();
   if (!trimmed || trimmed === "-" || trimmed === "+") {

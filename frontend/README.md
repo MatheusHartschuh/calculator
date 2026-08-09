@@ -4,7 +4,7 @@ Aplicacao React/Vite da calculadora.
 Ela consome a API do backend Go em vez de executar os calculos localmente.
 
 Veja tambem a documentacao principal em
-[`docs/documentacao-do-projeto.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/documentacao-do-projeto.md).
+[`docs/doc-tech.md`](../docs/doc-tech.md).
 
 ## Responsabilidades
 
@@ -15,7 +15,7 @@ Veja tambem a documentacao principal em
 
 ## Estrutura principal
 
-- `src/App.tsx` concentra o fluxo da calculadora
+- `src/App/index.tsx` concentra o fluxo da calculadora
 - `src/services/calculatorApi.ts` centraliza a comunicacao com o backend
 - `src/lib/number.ts` cuida de parse e limpeza de numeros
 - `src/utils/` guarda helpers reutilizaveis

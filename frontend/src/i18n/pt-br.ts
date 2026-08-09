@@ -9,6 +9,7 @@ const ptBr: Translations = {
     history: {
       title: "Histórico",
       empty: "Vazio!",
+      clear: "Limpar",
     },
     memory: {
       title: "Memória",
@@ -60,6 +61,7 @@ const ptBr: Translations = {
   aria: {
     openSettings: "Abrir configurações",
     memoryRemove: "Remover item da memória",
+    clearHistory: "Limpar histórico",
   },
 } as const;
 

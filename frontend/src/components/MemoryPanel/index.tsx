@@ -1,7 +1,7 @@
 import { useI18n } from "../../i18n";
 import { cleanNumberString } from "../../lib/number";
 import { formatDisplayValue } from "../../utils/helper";
-import { ClearButton, EmptyState, Item, ItemActions, ItemButton, ItemValue, PanelContainer, Title } from "./styles";
+import { ClearButton, EmptyState, Item, ItemActions, ItemButton, ItemValue, PanelContainer, Title } from "./style";
 
 type MemoryPanelProps = {
   memory: number[];
@@ -14,7 +14,29 @@ type MemoryPanelProps = {
 function MemoryPanel({ memory, decimalPlaces, onRecall, onRemove, onClear }: MemoryPanelProps) {
   const { t } = useI18n();
 
-  return (
+  // List of stored values with actions to recall or remove each item.
+  const memoryItems = memory.map((value, index) => {
+    const formatted = formatDisplayValue(cleanNumberString(value, decimalPlaces));
+
+    return (
+      <Item key={`${index}-${value}`}>
+        <ItemButton type="button" onClick={() => onRecall(value)}>
+          <ItemValue>{formatted}</ItemValue>
+        </ItemButton>
+        <ItemActions>
+          <button type="button" onClick={() => onRemove(index)} aria-label={t.aria.memoryRemove}>
+            ×
+          </button>
+        </ItemActions>
+      </Item>
+    );
+  });
+
+  // Empty state or current memory items.
+  const memoryContent = memory.length === 0 ? <EmptyState>{t.panels.memory.empty}</EmptyState> : memoryItems;
+
+  // Memory panel with its title, clear action, and current content.
+  const memoryPanel = (
     <PanelContainer>
       <Title>
         {t.panels.memory.title}
@@ -22,28 +44,11 @@ function MemoryPanel({ memory, decimalPlaces, onRecall, onRemove, onClear }: Mem
           MC
         </ClearButton>
       </Title>
-      {memory.length === 0 ? (
-        <EmptyState>{t.panels.memory.empty}</EmptyState>
-      ) : (
-        memory.map((value, index) => {
-          const formatted = formatDisplayValue(cleanNumberString(value, decimalPlaces));
-
-          return (
-            <Item key={`${index}-${value}`}>
-              <ItemButton type="button" onClick={() => onRecall(value)}>
-                <ItemValue>{formatted}</ItemValue>
-              </ItemButton>
-              <ItemActions>
-                <button type="button" onClick={() => onRemove(index)} aria-label={t.aria.memoryRemove}>
-                  ×
-                </button>
-              </ItemActions>
-            </Item>
-          );
-        })
-      )}
+      {memoryContent}
     </PanelContainer>
   );
+
+  return memoryPanel;
 }
 
 export default MemoryPanel;

@@ -1,6 +1,6 @@
 # Documentação técnica da Calculadora
 
-Este arquivo é o registro técnico mais completo do projeto. A ideia é que ele responda, com o máximo de contexto possível, perguntas sobre a aplicação, sua estrutura, o contrato entre frontend e backend, os testes, o Docker, as decisões de arquitetura e o alinhamento com o objetivo descrito em [`docs/objective.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/objective.md).
+Este arquivo é o registro técnico principal do projeto. A ideia é que ele responda, com o máximo de contexto possível, perguntas sobre a aplicação, sua estrutura, o contrato entre frontend e backend, os testes, o Docker e as decisões de arquitetura.
 
 ## Visão geral
 
@@ -13,11 +13,9 @@ A aplicação é uma calculadora full-stack com:
 
 A decisão central do projeto foi fazer o backend ser a fonte de verdade dos cálculos. O frontend mantém a interface, o estado de interação e a experiência do usuário, mas não contém a lógica final de matemática.
 
-## Relação com o `objective.md`
+## Estado atual do projeto
 
-O arquivo [`docs/objective.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/objective.md) pede uma calculadora full-stack com React no frontend, Go no backend, API REST, testes, cobertura, documentação clara e, se possível, Docker.
-
-O estado atual do repositório atende a esse objetivo da seguinte forma:
+O repositório implementa uma calculadora full-stack com React no frontend, Go no backend, API REST, testes, cobertura, documentação e Docker:
 
 - operações básicas estão cobertas no backend: soma, subtração, multiplicação e divisão
 - operações opcionais também foram incluídas: potência, raiz quadrada e porcentagem
@@ -50,14 +48,7 @@ Microservice em Go que expõe a API REST e executa os cálculos.
 
 ### `docs/`
 
-Documentação do projeto:
-
-- [`docs/objective.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/objective.md)
-- [`docs/scope.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/scope.md)
-- [`docs/guia-do-projeto.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/guia-do-projeto.md)
-- [`docs/documentacao-do-projeto.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/documentacao-do-projeto.md)
-- [`docs/docker.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/docker.md)
-- este arquivo, [`docs/doc-tech.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/doc-tech.md)
+Documentação técnica principal do projeto, mantida neste arquivo: [`docs/doc-tech.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/doc-tech.md).
 
 ## Visão geral do frontend
 
@@ -70,6 +61,7 @@ O frontend fica em `frontend/` e é responsável por:
 - manter memória local de valores
 - persistir preferências de idioma e casas decimais
 - chamar o backend para executar as operações
+- tratar erros de rede e respostas inválidas de forma previsível
 
 ### Arquivo de entrada
 
@@ -79,7 +71,7 @@ Esse arquivo apenas monta o React root, importa o CSS global e renderiza o `App`
 
 ### Fluxo principal de estado
 
-- [`frontend/src/App.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App.tsx) concentra a orquestração geral
+- [`frontend/src/App/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App/index.tsx) concentra a orquestração geral
 - `displayValue` guarda o texto atualmente exibido
 - `accumulator` guarda o valor da operação em andamento
 - `pendingOperation` guarda a operação binária pendente
@@ -167,6 +159,8 @@ Importante:
 
 O histórico armazena apenas cálculos que deram certo. No estado atual, ele é limitado a 10 entradas, para evitar crescimento infinito da UI.
 
+O painel também oferece um botão para limpar todas as entradas do histórico.
+
 ### Configurações
 
 - [`frontend/src/lib/preferences.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/lib/preferences.ts)
@@ -242,14 +236,16 @@ Responsabilidades:
 
 ### Layout e estilo
 
-- [`frontend/src/App.styles.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App.styles.ts)
+- [`frontend/src/App/style.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App/style.ts)
 - [`frontend/src/style/theme.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/style/theme.ts)
 - [`frontend/src/index.css`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/index.css)
 
 Decisões visuais importantes:
 
 - a página centraliza o workspace vertical e horizontalmente
-- o workspace usa uma grid com histórico à esquerda, calculadora no centro e memória à direita
+- em desktop, o workspace usa uma grid com histórico à esquerda, calculadora no centro e memória à direita
+- abaixo de 1024px, a grid vira uma coluna na ordem calculadora, histórico e memória
+- abaixo de 640px, os espaçamentos são reduzidos e os botões do keypad mantêm área mínima de toque de 44x44px
 - o tema é definido por constantes locais
 - os botões usam cores semânticas por tipo de ação
 - o display e os painéis têm visual simples e consistente
@@ -265,6 +261,40 @@ Fluxo do build:
 - roda `npm test`
 - roda `npm run build`
 - publica os assets estáticos em Nginx
+
+## Setup e execução local
+
+### Requisitos
+
+- Node.js 22+
+- npm
+- Go 1.22+ para executar o backend sem Docker
+- Docker e Docker Compose para subir os dois serviços juntos
+
+### Preparar o frontend
+
+```bash
+cd frontend
+npm install
+```
+
+### Executar o frontend
+
+```bash
+cd frontend
+npm start
+```
+
+Também é possível usar `npm start` na raiz; o script repassa a execução para `frontend/`.
+
+### Executar o backend
+
+```bash
+cd backend
+go run ./cmd/api
+```
+
+O frontend usa `http://localhost:8080` como URL padrão da API. Para apontar para outra API, defina `VITE_API_BASE_URL` no ambiente de build.
 
 ## Visão geral do backend
 
@@ -535,7 +565,7 @@ Exemplos de erro retornados pela API:
 ### Raiz quadrada
 
 1. O usuário digita um número.
-2. O frontend converte o atalho de tecla para `√` ou usa o botão `Raiz`.
+2. O frontend converte o atalho de tecla para `√` ou usa o botão `√`.
 3. O frontend envia uma operação unária ao backend.
 4. O backend executa `sqrt`.
 5. O resultado volta como JSON e a UI é atualizada.
@@ -642,7 +672,7 @@ go run ./cmd/api
 
 O projeto foi desenvolvido com apoio de IA generativa nesta sessão, usando o Codex como copiloto para:
 
-- ler e interpretar o `objective.md`
+- ler e interpretar os requisitos iniciais do projeto
 - mapear a base existente
 - planejar o repositório em camadas
 - implementar o backend Go
@@ -660,7 +690,7 @@ Não houve uso de outra IA externa como fonte de verdade do produto. A IA foi us
 Como esse trabalho foi feito em uma conversa longa, este documento registra os temas dos prompts principais que moldaram a implementação.
 
 - entender o projeto inteiro e criar um documento com o que é importante
-- ler o `objective.md` em detalhe antes de mexer no código
+- ler os requisitos iniciais em detalhe antes de mexer no código
 - fechar o escopo e definir a fronteira clara entre frontend e backend
 - reorganizar o repositório em `frontend/`, `backend/` e `docs/`
 - implementar o backend Go
@@ -705,6 +735,14 @@ Em termos práticos, os prompts foram usados para:
 - os cálculos precisam ser fáceis de explicar e de testar
 - a experiência visual deve continuar simples, sem excesso de camadas
 
+## Histórico da evolução
+
+- o projeto saiu de uma calculadora local monolítica
+- o frontend foi refeito para consumir a API
+- o backend passou a centralizar regras e validações
+- os testes foram distribuídos entre unitários, contrato e integração leve
+- o ambiente Docker foi adicionado para reduzir o atrito de setup
+
 ## Pontos para melhorar no futuro
 
 - adicionar mais testes de componentes no frontend
@@ -721,9 +759,7 @@ Em termos práticos, os prompts foram usados para:
 ## Arquivos mais importantes para consulta rápida
 
 - [`README.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/README.md)
-- [`docs/objective.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/objective.md)
-- [`docs/scope.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/scope.md)
-- [`frontend/src/App.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App.tsx)
+- [`frontend/src/App/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App/index.tsx)
 - [`frontend/src/services/calculatorApi.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/services/calculatorApi.ts)
 - [`backend/cmd/api/main.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/cmd/api/main.go)
 - [`backend/internal/http/server.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/http/server.go)
@@ -733,11 +769,9 @@ Em termos práticos, os prompts foram usados para:
 
 Se alguém quiser entender este projeto de ponta a ponta, a sequência de leitura mais útil é:
 
-1. `docs/objective.md`
-2. `docs/scope.md`
-3. este arquivo, `docs/doc-tech.md`
-4. `README.md`
-5. `frontend/src/App.tsx`
-6. `backend/cmd/api/main.go`
+1. `README.md`
+2. este arquivo, `docs/doc-tech.md`
+3. `frontend/src/App/index.tsx`
+4. `backend/cmd/api/main.go`
 
-Essa ordem mostra o objetivo, o escopo, a arquitetura e finalmente a implementação concreta.
+Essa ordem mostra a visão geral, a arquitetura e finalmente a implementação concreta.

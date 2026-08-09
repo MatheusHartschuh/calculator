@@ -12,7 +12,7 @@ import {
   Overlay,
   Select,
   Title,
-} from "./styles";
+} from "./style";
 import Button from "../Button";
 import type { CalculatorSettings } from "../../lib/preferences";
 
@@ -57,67 +57,92 @@ function SettingsModal({ isOpen, settings, onClose, onSave }: SettingsModalProps
     onClose();
   };
 
-  return (
-    <Overlay role="presentation" onMouseDown={onClose}>
-      <Card
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-title"
-        onMouseDown={(event) => event.stopPropagation()}
+  // Modal header with its title and close action.
+  const modalHeader = (
+    <Header>
+      <Title id="settings-title">{t.settings.title}</Title>
+      <CloseButton type="button" onClick={onClose} aria-label={t.trig.close}>
+        ×
+      </CloseButton>
+    </Header>
+  );
+
+  // Field that controls the number of displayed decimal places.
+  const decimalPlacesField = (
+    <Field>
+      <FieldLabel htmlFor="decimal-places">{t.settings.decimalsLabel}</FieldLabel>
+      <FieldValue
+        id="decimal-places"
+        type="number"
+        min={0}
+        max={12}
+        step={1}
+        value={draft.decimalPlaces}
+        onChange={(event) =>
+          setDraft((current) => ({
+            ...current,
+            decimalPlaces: Number.parseInt(event.target.value, 10) || 0,
+          }))
+        }
+      />
+    </Field>
+  );
+
+  // Field that allows switching the calculator language.
+  const languageField = (
+    <Field>
+      <FieldLabel htmlFor="language">{t.settings.languageLabel}</FieldLabel>
+      <Select
+        id="language"
+        value={draft.language}
+        onChange={(event) =>
+          setDraft((current) => ({
+            ...current,
+            language: event.target.value as Language,
+          }))
+        }
       >
-        <Header>
-          <Title id="settings-title">{t.settings.title}</Title>
-          <CloseButton type="button" onClick={onClose} aria-label={t.trig.close}>
-            ×
-          </CloseButton>
-        </Header>
+        {LANGUAGE_OPTIONS.map((language) => (
+          <option key={language} value={language}>
+            {t.settings.languageOptions[language]}
+          </option>
+        ))}
+      </Select>
+    </Field>
+  );
 
-        <Field>
-          <FieldLabel htmlFor="decimal-places">{t.settings.decimalsLabel}</FieldLabel>
-          <FieldValue
-            id="decimal-places"
-            type="number"
-            min={0}
-            max={12}
-            step={1}
-            value={draft.decimalPlaces}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                decimalPlaces: Number.parseInt(event.target.value, 10) || 0,
-              }))
-            }
-          />
-        </Field>
+  // Actions available to cancel or save the settings.
+  const modalActions = (
+    <Actions>
+      <Button label={t.settings.cancel} onClick={onClose} type="action" />
+      <Button label={t.settings.save} onClick={handleSave} type="action" />
+    </Actions>
+  );
 
-        <Field>
-          <FieldLabel htmlFor="language">{t.settings.languageLabel}</FieldLabel>
-          <Select
-            id="language"
-            value={draft.language}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                language: event.target.value as Language,
-              }))
-            }
-          >
-            {LANGUAGE_OPTIONS.map((language) => (
-              <option key={language} value={language}>
-                {t.settings.languageOptions[language]}
-              </option>
-            ))}
-          </Select>
-        </Field>
+  // Dialog content protected from closing when clicked internally.
+  const modalCard = (
+    <Card
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-title"
+      onMouseDown={(event) => event.stopPropagation()}
+    >
+      {modalHeader}
+      {decimalPlacesField}
+      {languageField}
+      {modalActions}
+    </Card>
+  );
 
-        <Actions>
-          <Button label={t.settings.cancel} onClick={onClose} type="action" />
-          <Button label={t.settings.save} onClick={handleSave} type="action" />
-        </Actions>
-      </Card>
+  // Complete modal with its backdrop and settings dialog.
+  const settingsModal = (
+    <Overlay role="presentation" onMouseDown={onClose}>
+      {modalCard}
       <Backdrop aria-hidden="true" />
     </Overlay>
   );
+
+  return settingsModal;
 }
 
 export default SettingsModal;

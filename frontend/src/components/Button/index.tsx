@@ -2,7 +2,7 @@ import React from "react";
 import { getTooltipForKey } from "../../utils/tooltipText";
 import { useI18n } from "../../i18n";
 import { theme } from "../../style/theme";
-import { StyledButton } from "./styles";
+import { StyledButton } from "./style";
 
 type ButtonType = "number" | "operator" | "action" | "memory" | "func";
 
@@ -14,7 +14,7 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-//Define cores por rótulo
+// Defines colors by label.
 const LABEL_STYLES: Record<string, { background: string; color: string }> = {
   "+": { background: theme.colors.green, color: theme.colors.white },
   "*": { background: theme.colors.green, color: theme.colors.white },
@@ -39,7 +39,7 @@ const LABEL_STYLES: Record<string, { background: string; color: string }> = {
   "Close": { background: theme.colors.red, color: theme.colors.white },
 };
 
-//Define estilos por tipo de botão
+// Defines styles by button type.
 const TYPE_STYLES: Record<ButtonType, { background: string; color: string }> = {
   number: { background: theme.colors.numeric, color: theme.colors.text },
   operator: { background: theme.colors.green, color: theme.colors.white },
@@ -58,13 +58,15 @@ const Button: React.FC<ButtonProps> = ({ label, onClick, type, className, disabl
     if (!disabled) onClick(label);
   };
 
-  //Tooltip contextual
+  // Contextual tooltip.
   const tooltip = getTooltipForKey(label, language);
 
-  return (
+  // Button configured with the current label's appearance, accessibility, and action.
+  const buttonElement = (
     <StyledButton
       className={className}
-      style={{ backgroundColor: background, color }}
+      $backgroundColor={background}
+      $color={color}
       onClick={handleClick}
       title={tooltip}
       aria-label={tooltip ?? label}
@@ -73,6 +75,8 @@ const Button: React.FC<ButtonProps> = ({ label, onClick, type, className, disabl
       {label}
     </StyledButton>
   );
+
+  return buttonElement;
 };
 
 export default React.memo(Button);

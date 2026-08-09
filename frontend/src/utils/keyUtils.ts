@@ -5,7 +5,7 @@ const actionKeys = new Set(["AC", "C", "=", "+/-"]);
 const funcKeys = new Set(["√", "x²", "%"]);
 const memoryKeys = new Set(["MC", "MR", "M+", "M-"]);
 
-// Normaliza a tecla recebida do teclado físico ou virtual.
+// Normalizes a key received from the physical or virtual keyboard.
 export function normalizeKey(raw: string): string {
   const key = (raw ?? "").toString().trim();
   if (!key) return "";
@@ -26,7 +26,7 @@ export function normalizeKey(raw: string): string {
   return key;
 }
 
-// Retorna o tipo da tecla normalizada.
+// Returns the type of the normalized key.
 export function getKeyType(rawKey: string): KeyType | undefined {
   const key = normalizeKey(rawKey);
 
@@ -42,7 +42,7 @@ export function getKeyType(rawKey: string): KeyType | undefined {
   return undefined;
 }
 
-// Acrescenta um dígito ou separador decimal à string atual.
+// Appends a digit or decimal separator to the current string.
 export function appendNumber(expression: string, rawKey: string): string {
   const key = normalizeKey(rawKey);
   const decimalKey = key === "," ? "." : key;
@@ -67,7 +67,7 @@ export function appendNumber(expression: string, rawKey: string): string {
   return current + decimalKey;
 }
 
-// Inverte o sinal do valor atual.
+// Toggles the sign of the current value.
 export function toggleSign(expression: string): string {
   if (!expression || expression === "0") {
     return "-0";

@@ -9,6 +9,7 @@ const en: Translations = {
     history: {
       title: "History",
       empty: "Empty!",
+      clear: "Clear",
     },
     memory: {
       title: "Memory",
@@ -60,6 +61,7 @@ const en: Translations = {
   aria: {
     openSettings: "Open settings",
     memoryRemove: "Remove memory item",
+    clearHistory: "Clear history",
   },
 } as const;
 

@@ -1,6 +1,6 @@
 import React from "react";
 import Button from "../Button";
-import { KeypadContainer, KeypadSpacer } from "./styles";
+import { KeypadContainer, KeypadSpacer } from "./style";
 
 type ButtonType = "operator" | "action" | "number" | "func" | "memory";
 
@@ -55,25 +55,31 @@ const Keypad: React.FC<KeypadProps> = ({ onButtonClick, disabled }) => {
     ],
   ];
 
-  return (
+  // Buttons rendered from the layout, including spaces for empty keys.
+  const keypadButtons = keypadLayout.flatMap((row, rowIndex) =>
+    row.map((btn, colIndex) =>
+      btn ? (
+        <Button
+          key={`${rowIndex}-${colIndex}-${btn.label}`}
+          label={btn.label}
+          onClick={onButtonClick}
+          type={btn.type}
+          disabled={disabled}
+        />
+      ) : (
+        <KeypadSpacer key={`${rowIndex}-${colIndex}`} aria-hidden="true" />
+      ),
+    ),
+  );
+
+  // Complete calculator keypad grid.
+  const keypad = (
     <KeypadContainer>
-      {keypadLayout.flatMap((row, rowIndex) =>
-        row.map((btn, colIndex) =>
-          btn ? (
-            <Button
-              key={`${rowIndex}-${colIndex}-${btn.label}`}
-              label={btn.label}
-              onClick={onButtonClick}
-              type={btn.type}
-              disabled={disabled}
-            />
-          ) : (
-            <KeypadSpacer key={`${rowIndex}-${colIndex}`} aria-hidden="true" />
-          ),
-        ),
-      )}
+      {keypadButtons}
     </KeypadContainer>
   );
+
+  return keypad;
 };
 
 export default Keypad;

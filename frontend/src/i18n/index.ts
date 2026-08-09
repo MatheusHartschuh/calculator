@@ -33,6 +33,7 @@ export interface Translations {
     history: {
       title: string;
       empty: string;
+      clear: string;
     };
     memory: {
       title: string;
@@ -64,6 +65,7 @@ export interface Translations {
   aria: {
     openSettings: string;
     memoryRemove: string;
+    clearHistory: string;
   };
 }
 

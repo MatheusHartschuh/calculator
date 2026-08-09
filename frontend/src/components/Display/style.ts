@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { theme } from "../../style/theme";
 
-//Campo de exibição principal
+// Main calculator display field.
 export const StyledDisplay = styled.input`
   background-color: ${theme.colors.numeric};
   color: ${theme.colors.text};

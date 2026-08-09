@@ -7,14 +7,12 @@ O backend é a fonte de verdade dos cálculos. O frontend cuida da interface, do
 Documentação principal:
 
 - [`docs/doc-tech.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/doc-tech.md)
-- [`docs/documentacao-do-projeto.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/documentacao-do-projeto.md)
-- [`docs/objective.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/objective.md)
 
 ## Estrutura do projeto
 
 - `frontend/` aplicação React/Vite
 - `backend/` microservice em Go
-- `docs/` objetivos, escopo e documentação técnica
+- `docs/` documentação técnica principal
 - `docker-compose.yml` orquestração local dos dois serviços
 - `package.json` scripts de conveniência na raiz
 
@@ -88,6 +86,18 @@ Depois disso:
 - frontend: `http://localhost:3000`
 - backend: `http://localhost:8080`
 - healthcheck: `http://localhost:8080/health`
+
+O que cada imagem faz:
+
+- a imagem do backend executa `go test ./...` durante o build e depois compila a API
+- a imagem do frontend executa `npm test` e `npm run build` durante o build
+- o frontend final roda em Nginx com fallback de SPA para `index.html`
+
+Variáveis relevantes:
+
+- `ADDR` define o endereço de escuta do backend
+- `CORS_ORIGIN` define qual origem pode acessar a API
+- `VITE_API_BASE_URL` permite apontar o frontend para outra API no build
 
 ## API examples
 
@@ -226,6 +236,4 @@ Isso gera:
 
 ## Documentação adicional
 
-- [`docs/scope.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/scope.md)
-- [`docs/guia-do-projeto.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/guia-do-projeto.md)
-- [`docs/docker.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/docker.md)
+Consulte [`docs/doc-tech.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/doc-tech.md) para a arquitetura, o contrato da API, os testes, o Docker e o histórico técnico do projeto.

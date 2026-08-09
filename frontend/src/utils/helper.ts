@@ -1,4 +1,4 @@
-// Formata números para display com separador de milhar e vírgula decimal.
+// Formats numbers for display with a thousands separator and decimal comma.
 export function formatDisplayValue(value: string): string {
   if (value == null || value === "" || value === "Erro") return value || "0";
 

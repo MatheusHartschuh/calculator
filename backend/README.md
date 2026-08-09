@@ -3,7 +3,7 @@
 Microservice em Go responsavel pelos calculos da aplicacao.
 
 Veja tambem a documentacao principal em
-[`docs/documentacao-do-projeto.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/documentacao-do-projeto.md).
+[`docs/doc-tech.md`](../docs/doc-tech.md).
 
 ## Intencao da estrutura
 
@@ -15,8 +15,8 @@ Veja tambem a documentacao principal em
 
 ## Responsabilidade
 
-O backend sera a fonte de verdade para os calculos expostos pela API.
-O frontend deve consumir essa API e nao conter a logica final de calculo.
+O backend é a fonte de verdade para os cálculos expostos pela API.
+O frontend consome essa API e não contém a lógica final de cálculo.
 
 ## Como rodar
 

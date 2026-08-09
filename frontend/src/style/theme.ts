@@ -1,4 +1,4 @@
-// src/style/theme.ts
+// Theme definitions.
 
 export const theme = {
   colors: {
@@ -26,6 +26,10 @@ export const theme = {
     },
   },
   spacing: (factor: number) => `${factor * 8}px`,
+  breakpoints: {
+    mobile: "640px",
+    tablet: "1024px",
+  },
   borderRadius: "8px",
   boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
 };

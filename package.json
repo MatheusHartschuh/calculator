@@ -1,5 +1,5 @@
 {
-  "name": "calculadora-monorepo",
+  "name": "calculator",
   "private": true,
   "scripts": {
     "start": "npm --prefix frontend start",
