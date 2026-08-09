@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	ErrDivisionByZero      = errors.New("division by zero")
-	ErrNegativeSquareRoot  = errors.New("square root of negative number")
+	ErrDivisionByZero       = errors.New("division by zero")
+	ErrNegativeSquareRoot   = errors.New("square root of negative number")
 	ErrUnsupportedOperation = errors.New("unsupported operation")
-	ErrInvalidResult       = errors.New("result is not a finite number")
-	ErrMissingOperand      = errors.New("missing operand")
+	ErrInvalidResult        = errors.New("result is not a finite number")
+	ErrMissingOperand       = errors.New("missing operand")
 )
 
 // Service performs arithmetic operations for the API.

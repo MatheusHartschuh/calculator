@@ -1,7 +1,13 @@
+import { getTranslations } from "../i18n";
+
 // Cleans a number's text representation for use in the display and history.
-export function cleanNumberString(value: number, fractionDigits = 12): string {
+export function cleanNumberString(
+  value: number,
+  fractionDigits = 12,
+  errorMessage = getTranslations("en").errors.display,
+): string {
   if (!Number.isFinite(value)) {
-    return "Erro";
+    return errorMessage;
   }
 
   const digits = Math.max(0, Math.trunc(fractionDigits));

@@ -16,7 +16,10 @@ function MemoryPanel({ memory, decimalPlaces, onRecall, onRemove, onClear }: Mem
 
   // List of stored values with actions to recall or remove each item.
   const memoryItems = memory.map((value, index) => {
-    const formatted = formatDisplayValue(cleanNumberString(value, decimalPlaces));
+    const formatted = formatDisplayValue(
+      cleanNumberString(value, decimalPlaces, t.errors.display),
+      t.errors.display,
+    );
 
     return (
       <Item key={`${index}-${value}`}>

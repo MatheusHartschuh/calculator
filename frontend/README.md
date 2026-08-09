@@ -1,54 +1,51 @@
 # Frontend
 
-Aplicacao React/Vite da calculadora.
-Ela consome a API do backend Go em vez de executar os calculos localmente.
+React/Vite frontend for the calculator application. It consumes the Go backend API instead of executing the final arithmetic locally.
 
-Veja tambem a documentacao principal em
-[`docs/doc-tech.md`](../docs/doc-tech.md).
+The main technical documentation is [`docs/doc-tech.md`](../docs/doc-tech.md).
 
-## Responsabilidades
+## Responsibilities
 
-- exibir o teclado, display e historico
-- montar requisicoes para a API
-- tratar erros de rede e respostas invalidas
-- manter a interface limpa e previsivel
+- Render the display, keypad, history, memory, and settings UI.
+- Accept mouse and physical keyboard input.
+- Coordinate calculator state through `src/hooks/useCalculator.ts`.
+- Send calculation requests through `src/services/calculatorApi.ts`.
+- Handle API errors and invalid responses predictably.
+- Persist language and decimal-place preferences locally.
 
-## Estrutura principal
+## Main structure
 
-- `src/App/index.tsx` concentra o fluxo da calculadora
-- `src/services/calculatorApi.ts` centraliza a comunicacao com o backend
-- `src/lib/number.ts` cuida de parse e limpeza de numeros
-- `src/utils/` guarda helpers reutilizaveis
-- `src/components/` contem a interface visual
+- `src/App/index.tsx`: visual composition and settings-provider orchestration.
+- `src/hooks/useCalculator.ts`: calculator state transitions, API orchestration, history, and memory actions.
+- `src/services/calculatorApi.ts`: HTTP client abstraction for the backend.
+- `src/lib/number.ts`: number parsing and normalization.
+- `src/utils/`: reusable keyboard and display helpers.
+- `src/components/`: visual components and their styled-components definitions.
+- `src/style/theme.ts`: centralized visual tokens.
+- `src/style/global.ts`: global styles that consume the theme.
 
-## Como rodar
+## Run locally
 
 ```bash
 npm install
 npm start
 ```
 
-## Variavel de ambiente
+## Environment variable
 
-- `VITE_API_BASE_URL` permite apontar o frontend para outra API
+- `VITE_API_BASE_URL`: points the frontend to a different backend URL during the build.
 
-## Testes
+## Tests and coverage
 
 ```bash
 npm test
 npm run lint
 npm run build
-```
-
-## Coverage
-
-```bash
 npm run coverage
 ```
 
-Isso gera o relatório de cobertura do frontend em `frontend/coverage/`.
+Coverage output is generated in `coverage/` when these commands are run from `frontend/`.
 
 ## Docker
 
-O frontend tambem pode ser executado com `docker compose up --build` na raiz do repositorio.
-Nesse caso a aplicacao fica exposta em `http://localhost:3000`.
+The frontend can also be run with `docker compose up --build` from the repository root. The production container serves the built assets with Nginx at `http://localhost:3000`.

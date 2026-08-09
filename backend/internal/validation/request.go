@@ -81,4 +81,3 @@ func ensureEOF(dec *json.Decoder) error {
 	}
 	return nil
 }
-

@@ -10,6 +10,10 @@ export const KeypadContainer = styled.div`
   @media (max-width: ${theme.breakpoints.mobile}) {
     gap: 6px;
   }
+
+  & .keypad-wide {
+    grid-column: span 3;
+  }
 `;
 
 export const KeypadSpacer = styled.div`

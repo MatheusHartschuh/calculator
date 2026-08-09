@@ -14,7 +14,7 @@ export const Overlay = styled.div`
 export const Backdrop = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: ${theme.colors.overlay};
   backdrop-filter: blur(4px);
   z-index: -1;
 `;
@@ -25,7 +25,7 @@ export const Card = styled.div`
   color: ${theme.colors.text};
   border-radius: 18px;
   padding: ${theme.spacing(3)};
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+  box-shadow: ${theme.modalBoxShadow};
 `;
 
 export const Header = styled.div`
@@ -65,7 +65,7 @@ export const FieldLabel = styled.label`
 
 export const FieldValue = styled.input`
   width: 100%;
-  border: 1px solid rgba(51, 51, 51, 0.18);
+  border: 1px solid ${theme.colors.border};
   border-radius: 12px;
   padding: ${theme.spacing(1.5)};
   font-size: ${theme.font.size.medium};
@@ -73,7 +73,7 @@ export const FieldValue = styled.input`
 
 export const Select = styled.select`
   width: 100%;
-  border: 1px solid rgba(51, 51, 51, 0.18);
+  border: 1px solid ${theme.colors.border};
   border-radius: 12px;
   padding: ${theme.spacing(1.5)};
   font-size: ${theme.font.size.medium};

@@ -58,7 +58,7 @@ func TestCalculateEndpoint(t *testing.T) {
 		wantStatus      int
 		wantResult      float64
 		wantError       string
-		wantErrorPrefix  bool
+		wantErrorPrefix bool
 	}{
 		{
 			name:       "add",
@@ -97,10 +97,10 @@ func TestCalculateEndpoint(t *testing.T) {
 			wantError:  "unsupported operation: mod",
 		},
 		{
-			name:           "invalid json",
-			body:           `{"operation":"add","left":10,`,
-			wantStatus:     http.StatusBadRequest,
-			wantError:      "invalid JSON payload",
+			name:            "invalid json",
+			body:            `{"operation":"add","left":10,`,
+			wantStatus:      http.StatusBadRequest,
+			wantError:       "invalid JSON payload",
 			wantErrorPrefix: true,
 		},
 	}

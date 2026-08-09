@@ -43,6 +43,11 @@ export interface Translations {
   display: {
     ariaLabel: string;
   };
+  errors: {
+    display: string;
+    invalidNumber: string;
+    unexpectedCalculation: string;
+  };
   settings: {
     title: string;
     decimalsLabel: string;

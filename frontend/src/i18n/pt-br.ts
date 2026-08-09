@@ -19,6 +19,11 @@ const ptBr: Translations = {
   display: {
     ariaLabel: "Display da calculadora",
   },
+  errors: {
+    display: "Erro",
+    invalidNumber: "Número inválido",
+    unexpectedCalculation: "Erro inesperado ao calcular",
+  },
   settings: {
     title: "Configurações",
     decimalsLabel: "Decimais padrão:",

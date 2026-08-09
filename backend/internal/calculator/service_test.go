@@ -97,4 +97,3 @@ func reqWithUnary(op domain.Operation, value float64) domain.CalculationRequest 
 		Value:     &value,
 	}
 }
-

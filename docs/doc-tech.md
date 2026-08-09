@@ -1,32 +1,35 @@
-# Documentação técnica da Calculadora
+# Calculator Technical Documentation
 
-Este arquivo é o registro técnico principal do projeto. A ideia é que ele responda, com o máximo de contexto possível, perguntas sobre a aplicação, sua estrutura, o contrato entre frontend e backend, os testes, o Docker e as decisões de arquitetura.
+This is the main technical record for the project. It documents the current implementation, frontend and backend boundaries, API contract, testing strategy, Docker setup, and architecture decisions.
 
-## Visão geral
+## Overview
 
-A aplicação é uma calculadora full-stack com:
+The application is a full-stack calculator with:
 
-- frontend em React + TypeScript + Vite
-- backend em Go
-- comunicação entre as camadas via HTTP/JSON
-- foco em código limpo, legível, idiomático e testável
+- React, TypeScript, and Vite in the frontend;
+- Go in the backend;
+- HTTP/JSON communication between the two layers;
+- a focus on readable, idiomatic, maintainable, and testable code.
 
-A decisão central do projeto foi fazer o backend ser a fonte de verdade dos cálculos. O frontend mantém a interface, o estado de interação e a experiência do usuário, mas não contém a lógica final de matemática.
+The central design decision is that the backend is the source of truth for arithmetic results. The frontend owns interaction state and presentation, but does not reimplement the final mathematical calculation.
 
-## Estado atual do projeto
+## Current project status
 
-O repositório implementa uma calculadora full-stack com React no frontend, Go no backend, API REST, testes, cobertura, documentação e Docker:
+The repository currently provides:
 
-- operações básicas estão cobertas no backend: soma, subtração, multiplicação e divisão
-- operações opcionais também foram incluídas: potência, raiz quadrada e porcentagem
-- o frontend consome a API do backend para calcular
-- há testes unitários e testes de integração/contrato
-- há cobertura de frontend e backend
-- há Dockerfiles separados para frontend e backend
-- há `docker-compose.yml` para subir os dois serviços juntos
-- há documentação técnica e README principal com instruções de uso
+- addition, subtraction, multiplication, and division;
+- exponentiation, square root, and percentage operations;
+- a React UI with mouse and physical keyboard input;
+- local history with a clear action;
+- local memory with `M+`, `M-`, `MR`, `MC`, recall, and item removal;
+- settings for language and decimal places;
+- English and Brazilian Portuguese translations;
+- responsive layout with mobile touch targets;
+- unit, component, API, and HTTP integration tests;
+- frontend and backend coverage scripts;
+- separate Dockerfiles and a Docker Compose setup.
 
-## Estrutura do repositório
+## Repository structure
 
 ```text
 .
@@ -40,411 +43,315 @@ O repositório implementa uma calculadora full-stack com React no frontend, Go n
 
 ### `frontend/`
 
-Aplicação React/Vite que representa a interface visual da calculadora.
+React/Vite application responsible for the visual interface and interaction state.
 
 ### `backend/`
 
-Microservice em Go que expõe a API REST e executa os cálculos.
+Go microservice responsible for request validation and arithmetic execution.
 
 ### `docs/`
 
-Documentação técnica principal do projeto, mantida neste arquivo: [`docs/doc-tech.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/doc-tech.md).
+Project documentation. This file is the main technical reference.
 
-## Visão geral do frontend
+## Frontend architecture
 
-O frontend fica em `frontend/` e é responsável por:
+The frontend is responsible for:
 
-- renderizar a calculadora
-- receber input por clique e teclado físico
-- manter estado de UI
-- mostrar histórico local dos cálculos
-- manter memória local de valores
-- persistir preferências de idioma e casas decimais
-- chamar o backend para executar as operações
-- tratar erros de rede e respostas inválidas de forma previsível
+- rendering the calculator UI;
+- accepting button and physical keyboard input;
+- maintaining calculator interaction state;
+- displaying local history and memory;
+- persisting language and decimal-place preferences;
+- calling the backend through an API client;
+- presenting localized error states.
 
-### Arquivo de entrada
+### Entry point and composition
 
-- [`frontend/src/main.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/main.tsx)
+- [`../frontend/src/main.tsx`](../frontend/src/main.tsx)
+- [`../frontend/src/App/index.tsx`](../frontend/src/App/index.tsx)
 
-Esse arquivo apenas monta o React root, importa o CSS global e renderiza o `App`.
+`main.tsx` creates the React root, loads the base CSS, and renders the global styled-components stylesheet. `App/index.tsx` is responsible for visual composition, settings state, and the language provider. Calculator behavior is delegated to `useCalculator`.
 
-### Fluxo principal de estado
+### Calculator hook
 
-- [`frontend/src/App/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App/index.tsx) concentra a orquestração geral
-- `displayValue` guarda o texto atualmente exibido
-- `accumulator` guarda o valor da operação em andamento
-- `pendingOperation` guarda a operação binária pendente
-- `waitingForOperand` controla quando a próxima entrada substitui o display
-- `history` armazena os últimos cálculos bem-sucedidos
-- `memory` armazena valores salvos na memória
-- `isBusy` evita chamadas simultâneas para a API
-- `isSettingsOpen` controla o modal de configurações
+- [`../frontend/src/hooks/useCalculator.ts`](../frontend/src/hooks/useCalculator.ts)
 
-### Ciclo de uma operação
+The custom hook owns the interaction state and exposes the actions consumed by the UI:
 
-1. O usuário digita um número no display ou pelo teclado físico.
-2. O estado local vai acumulando a entrada.
-3. Ao escolher uma operação, o frontend decide se precisa apenas guardar a operação ou se já há cálculo pendente a resolver.
-4. Quando a conta precisa ser resolvida, o frontend chama o backend.
-5. O backend responde com JSON.
-6. O frontend atualiza display, histórico e estado de controle.
+- `displayValue`: text currently shown in the display;
+- `accumulator`: left-hand value of a pending binary operation;
+- `pendingOperation`: binary operation waiting for its right-hand value;
+- `waitingForOperand`: controls whether the next number replaces the display;
+- `history`: successful calculations, limited to the ten most recent entries;
+- `memory`: values stored locally;
+- `isBusy`: prevents overlapping calculator API requests;
+- error state and localized display messages.
 
-### Comunicação com a API
+The hook also coordinates binary and unary API calls, history updates, memory actions, and keyboard normalization.
 
-- [`frontend/src/services/calculatorApi.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/services/calculatorApi.ts)
+### API client
 
-Esse arquivo encapsula as chamadas `fetch` e expõe:
+- [`../frontend/src/services/calculatorApi.ts`](../frontend/src/services/calculatorApi.ts)
 
-- `calculateBinary(operation, left, right)`
-- `calculateUnary(operation, value)`
+The API client is the only frontend module that calls `fetch`. It exposes:
 
-Além disso, ele define `CalculatorApiError`, que preserva `message` e `status` HTTP para a UI conseguir mostrar erros de forma previsível.
+- `calculateBinary(operation, left, right)`;
+- `calculateUnary(operation, value)`.
 
-### Tipos compartilhados no frontend
+`CalculatorApiError` preserves the backend message and HTTP status. Components and hook tests mock this module instead of making real network requests.
 
-- [`frontend/src/types/calculator.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/types/calculator.ts)
+The API base URL is read from `VITE_API_BASE_URL`, with `http://localhost:8080` as the local development fallback.
 
-Esse arquivo define:
+### Frontend types
 
-- `BinaryOperation`
-- `UnaryOperation`
-- `BinaryCalculationRequest`
-- `UnaryCalculationRequest`
-- `CalculationResultResponse`
-- `CalculationErrorResponse`
+- [`../frontend/src/types/calculator.ts`](../frontend/src/types/calculator.ts)
 
-Esses tipos ajudam a manter o contrato do frontend consistente com a API do backend.
+The type definitions cover:
 
-### Utilitários de número
+- `BinaryOperation`;
+- `UnaryOperation`;
+- binary and unary request payloads;
+- success and error response payloads.
 
-- [`frontend/src/lib/number.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/lib/number.ts)
-- [`frontend/src/utils/helper.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/utils/helper.ts)
+These types keep the client-side API contract explicit.
 
-Esses helpers cuidam de:
+### Number and display utilities
 
-- parse de string para número
-- limpeza e normalização de números para o display
-- formatação visual com separador de milhar e vírgula decimal
+- [`../frontend/src/lib/number.ts`](../frontend/src/lib/number.ts)
+- [`../frontend/src/utils/helper.ts`](../frontend/src/utils/helper.ts)
 
-Exemplo:
+These utilities handle:
 
-- valor interno: `12345.67`
-- valor exibido: `12.345,67`
+- parsing input strings into finite numbers;
+- normalizing numeric strings for calculations and history;
+- formatting thousands separators and decimal commas;
+- converting error display text through the active i18n messages.
 
-### Memória local
+For example, the internal value `12345.67` is displayed as `12.345,67`.
 
-- [`frontend/src/lib/memory.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/lib/memory.ts)
-- [`frontend/src/components/MemoryPanel/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/MemoryPanel/index.tsx)
+### Memory
 
-A memória do frontend é local e fica em um array de números.
+- [`../frontend/src/lib/memory.ts`](../frontend/src/lib/memory.ts)
+- [`../frontend/src/components/MemoryPanel/index.tsx`](../frontend/src/components/MemoryPanel/index.tsx)
 
-Operações suportadas:
+Memory is local UI state stored as an array of numbers. It supports:
 
-- `MC` limpa tudo
-- `MR` recupera o último valor
-- `M+` adiciona o valor atual à memória
-- `M-` adiciona o oposto do valor atual à memória
-- cada item pode ser removido individualmente
+- `MC`: clear memory;
+- `MR`: recall the last value;
+- `M+`: add the current value;
+- `M-`: add the opposite of the current value;
+- recalling a specific visible item;
+- removing an individual item.
 
-Importante:
+Memory is not sent to the backend and is not persisted across page reloads.
 
-- a memória não vai para o backend
-- a memória não é persistida entre reloads
-- ela existe para experiência de uso, não como fonte de verdade do cálculo
+### History
 
-### Histórico local
+- [`../frontend/src/components/HistoryPanel/index.tsx`](../frontend/src/components/HistoryPanel/index.tsx)
 
-- [`frontend/src/components/HistoryPanel/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/HistoryPanel/index.tsx)
+History contains only successful calculations and is limited to ten entries. The panel includes an action to clear all entries. History is local UI state and is not sent to the backend or persisted across reloads.
 
-O histórico armazena apenas cálculos que deram certo. No estado atual, ele é limitado a 10 entradas, para evitar crescimento infinito da UI.
+### Settings and internationalization
 
-O painel também oferece um botão para limpar todas as entradas do histórico.
+- [`../frontend/src/lib/preferences.ts`](../frontend/src/lib/preferences.ts)
+- [`../frontend/src/components/SettingsModal/index.tsx`](../frontend/src/components/SettingsModal/index.tsx)
+- [`../frontend/src/i18n/index.ts`](../frontend/src/i18n/index.ts)
+- [`../frontend/src/i18n/en.ts`](../frontend/src/i18n/en.ts)
+- [`../frontend/src/i18n/pt-br.ts`](../frontend/src/i18n/pt-br.ts)
 
-### Configurações
+The settings modal controls:
 
-- [`frontend/src/lib/preferences.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/lib/preferences.ts)
-- [`frontend/src/components/SettingsModal/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/SettingsModal/index.tsx)
+- language (`en` or `pt-br`);
+- default decimal places, normalized between 0 and 12.
 
-As preferências salvas são:
+Settings are saved in `localStorage`. English is the default language. The document language attribute is updated when the selected language changes.
 
-- idioma
-- quantidade padrão de casas decimais
+Translations cover application text, panel titles, settings labels, tooltips, accessibility labels, and calculator error display messages.
 
-Essas preferências são persistidas em `localStorage`.
+### Keyboard normalization
 
-Pontos importantes:
+- [`../frontend/src/utils/keyUtils.ts`](../frontend/src/utils/keyUtils.ts)
+- [`../frontend/src/utils/tooltipText.ts`](../frontend/src/utils/tooltipText.ts)
 
-- o idioma padrão é `en`
-- `pt-br` é a segunda opção
-- casas decimais são limitadas entre 0 e 12
-- `document.documentElement.lang` é atualizado quando o idioma muda
+Keyboard aliases are normalized before the calculator state machine handles them:
 
-### Internacionalização
+- `Enter` becomes `=`;
+- `Backspace` becomes `C`;
+- `Escape` becomes `AC`;
+- `.` becomes the displayed comma decimal separator;
+- `sqrt` and `raiz` become `√`;
+- `x2`, `x^2`, and `^2` become `x²`.
 
-- [`frontend/src/i18n/index.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/i18n/index.ts)
-- [`frontend/src/i18n/en.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/i18n/en.ts)
-- [`frontend/src/i18n/pt-br.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/i18n/pt-br.ts)
+### UI components
 
-O sistema de i18n cobre:
+- [`../frontend/src/components/Display/index.tsx`](../frontend/src/components/Display/index.tsx): displays the value and captures keyboard input through `onKeyDown`.
+- [`../frontend/src/components/Keypad/index.tsx`](../frontend/src/components/Keypad/index.tsx): renders memory, number, action, operator, and function buttons.
+- [`../frontend/src/components/Button/index.tsx`](../frontend/src/components/Button/index.tsx): applies semantic button colors, tooltips, and accessibility labels.
+- [`../frontend/src/components/HistoryPanel/index.tsx`](../frontend/src/components/HistoryPanel/index.tsx): displays history and the clear action.
+- [`../frontend/src/components/MemoryPanel/index.tsx`](../frontend/src/components/MemoryPanel/index.tsx): displays memory values and recall/remove actions.
+- [`../frontend/src/components/SettingsModal/index.tsx`](../frontend/src/components/SettingsModal/index.tsx): edits language and decimal-place preferences.
 
-- textos do aplicativo
-- títulos de painéis
-- textos das configurações
-- tooltips
-- labels de acessibilidade
+### Layout and styles
 
-O `en` é o idioma base e o `pt-br` é uma tradução explícita.
+- [`../frontend/src/App/style.ts`](../frontend/src/App/style.ts)
+- [`../frontend/src/style/theme.ts`](../frontend/src/style/theme.ts)
+- [`../frontend/src/style/global.ts`](../frontend/src/style/global.ts)
+- [`../frontend/src/index.css`](../frontend/src/index.css)
 
-### Normalização de teclas
+The layout behavior is:
 
-- [`frontend/src/utils/keyUtils.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/utils/keyUtils.ts)
-- [`frontend/src/utils/tooltipText.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/utils/tooltipText.ts)
+- desktop: history on the left, calculator in the center, memory on the right;
+- below 1024px: one column in the order calculator, history, memory;
+- below 640px: reduced spacing and a minimum 44x44px touch area for keypad buttons;
+- the `=` button spans three keypad columns below `0`, `,`, and `x²`, with `^` to its right below `√`.
 
-Esse conjunto faz a ponte entre:
+All application colors, gradients, modal colors, global colors, shadows, spacing, typography, and breakpoints are defined in `theme.ts` and consumed by styled-components.
 
-- teclado físico
-- botões da interface
-- labels exibidos ao usuário
+### Frontend Docker image
 
-Exemplos de normalização:
+- [`../frontend/Dockerfile`](../frontend/Dockerfile)
+- [`../frontend/nginx.conf`](../frontend/nginx.conf)
 
-- `Enter` vira `=`
-- `Backspace` vira `C`
-- `Escape` vira `AC`
-- `.` vira `,`
-- `sqrt` e `raiz` viram `√`
-- `x2`, `x^2` e `^2` viram `x²`
+The build stage:
 
-### Componentes principais
+1. installs dependencies with `npm ci`;
+2. runs `npm test`;
+3. runs `npm run build`.
 
-- [`frontend/src/components/Display/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/Display/index.tsx)
-- [`frontend/src/components/Keypad/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/Keypad/index.tsx)
-- [`frontend/src/components/Button/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/Button/index.tsx)
-- [`frontend/src/components/HistoryPanel/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/HistoryPanel/index.tsx)
-- [`frontend/src/components/MemoryPanel/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/MemoryPanel/index.tsx)
-- [`frontend/src/components/SettingsModal/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/components/SettingsModal/index.tsx)
+The final stage serves the generated assets with Nginx and supports SPA fallback routing.
 
-Responsabilidades:
+## Backend architecture
 
-- `Display`: mostra o valor atual e captura teclado físico.
-- `Keypad`: desenha a matriz de botões e inclui memória, operadores e funções.
-- `Button`: aplica cor, tooltip e acessibilidade.
-- `HistoryPanel`: mostra os cálculos concluídos.
-- `MemoryPanel`: mostra os valores salvos e ações de recall/remover.
-- `SettingsModal`: altera idioma e quantidade de casas decimais.
+The backend is responsible for:
 
-### Layout e estilo
+- receiving HTTP requests;
+- decoding and validating payloads;
+- executing arithmetic operations;
+- returning JSON responses;
+- mapping validation and execution failures to HTTP status codes.
 
-- [`frontend/src/App/style.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App/style.ts)
-- [`frontend/src/style/theme.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/style/theme.ts)
-- [`frontend/src/index.css`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/index.css)
+### Entry point
 
-Decisões visuais importantes:
+- [`../backend/cmd/api/main.go`](../backend/cmd/api/main.go)
 
-- a página centraliza o workspace vertical e horizontalmente
-- em desktop, o workspace usa uma grid com histórico à esquerda, calculadora no centro e memória à direita
-- abaixo de 1024px, a grid vira uma coluna na ordem calculadora, histórico e memória
-- abaixo de 640px, os espaçamentos são reduzidos e os botões do keypad mantêm área mínima de toque de 44x44px
-- o tema é definido por constantes locais
-- os botões usam cores semânticas por tipo de ação
-- o display e os painéis têm visual simples e consistente
+The entry point:
 
-### Docker do frontend
+- reads `ADDR` or `PORT`;
+- reads `CORS_ORIGIN`;
+- creates the calculator service and HTTP server;
+- starts `ListenAndServe`.
 
-- [`frontend/Dockerfile`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/Dockerfile)
-- [`frontend/nginx.conf`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/nginx.conf)
+Defaults:
 
-Fluxo do build:
+- `ADDR`: `:8080`;
+- `CORS_ORIGIN`: `*`.
 
-- instala dependências com `npm ci`
-- roda `npm test`
-- roda `npm run build`
-- publica os assets estáticos em Nginx
+### Domain contracts
 
-## Setup e execução local
+- [`../backend/internal/domain/calculation.go`](../backend/internal/domain/calculation.go)
 
-### Requisitos
+The domain package defines the operation values:
 
-- Node.js 22+
-- npm
-- Go 1.22+ para executar o backend sem Docker
-- Docker e Docker Compose para subir os dois serviços juntos
+- `add`;
+- `subtract`;
+- `multiply`;
+- `divide`;
+- `power`;
+- `sqrt`;
+- `percentage`.
 
-### Preparar o frontend
+It also defines request, success response, health response, and error response contracts.
 
-```bash
-cd frontend
-npm install
-```
+### Request validation
 
-### Executar o frontend
+- [`../backend/internal/validation/request.go`](../backend/internal/validation/request.go)
 
-```bash
-cd frontend
-npm start
-```
+Validation rules include:
 
-Também é possível usar `npm start` na raiz; o script repassa a execução para `frontend/`.
+- unknown JSON fields are rejected;
+- trailing data after the first JSON value is rejected;
+- `operation` is required;
+- binary operations require `left` and `right`;
+- unary operations require `value`.
 
-### Executar o backend
+Validation runs before the calculator service is called.
 
-```bash
-cd backend
-go run ./cmd/api
-```
+### Calculator service
 
-O frontend usa `http://localhost:8080` como URL padrão da API. Para apontar para outra API, defina `VITE_API_BASE_URL` no ambiente de build.
+- [`../backend/internal/calculator/service.go`](../backend/internal/calculator/service.go)
 
-## Visão geral do backend
+The service contains the arithmetic rules and does not depend on HTTP. It handles:
 
-O backend fica em `backend/` e é responsável por:
+- addition;
+- subtraction;
+- multiplication;
+- division;
+- exponentiation;
+- square root;
+- percentage.
 
-- receber requisições HTTP
-- validar payloads
-- executar as operações matemáticas
-- retornar respostas JSON
-- lidar com edge cases como divisão por zero e raiz de número negativo
+Execution errors include:
 
-### Ponto de entrada
+- division by zero;
+- square root of a negative number;
+- missing operands;
+- unsupported operations;
+- non-finite results.
 
-- [`backend/cmd/api/main.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/cmd/api/main.go)
+The service can be tested directly without starting a server.
 
-Esse arquivo:
+### HTTP layer
 
-- define o endereço do servidor via `ADDR` ou `PORT`
-- lê `CORS_ORIGIN`
-- cria o servidor HTTP
-- registra o handler da API
-- inicia o `ListenAndServe`
+- [`../backend/internal/http/server.go`](../backend/internal/http/server.go)
 
-Defaults importantes:
+The HTTP package owns routes, CORS middleware, JSON encoding, status codes, and error mapping.
 
-- `ADDR` padrão: `:8080`
-- `PORT` pode ser usado como alternativa
-- `CORS_ORIGIN` padrão: `*`
+Routes:
 
-### Domínio
+- `GET /health`;
+- `POST /api/calculate`.
 
-- [`backend/internal/domain/calculation.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/domain/calculation.go)
+Status behavior:
 
-Esse pacote concentra os contratos e as operações suportadas:
+- `400 Bad Request` for malformed/invalid payloads and unsupported or incomplete requests;
+- `422 Unprocessable Entity` for mathematical execution errors such as division by zero;
+- `405 Method Not Allowed` for an unsupported HTTP method;
+- `204 No Content` for CORS preflight requests.
 
-- `OperationAdd`
-- `OperationSubtract`
-- `OperationMultiply`
-- `OperationDivide`
-- `OperationPower`
-- `OperationSquareRoot`
-- `OperationPercentage`
-
-Também define:
-
-- `CalculationRequest`
-- `CalculationResponse`
-- `HealthResponse`
-- `ErrorResponse`
-
-### Validação
-
-- [`backend/internal/validation/request.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/validation/request.go)
-
-Regras principais:
-
-- JSON desconhecido é rejeitado com `DisallowUnknownFields`
-- payload com lixo extra após o JSON também é rejeitado
-- operação é obrigatória
-- operações binárias exigem `left` e `right`
-- operações unárias exigem `value`
-- a validação acontece antes da execução do cálculo
-
-Erros notáveis:
-
-- `ErrInvalidJSON`
-- `ErrMissingOperation`
-
-### Serviço de cálculo
-
-- [`backend/internal/calculator/service.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/calculator/service.go)
-
-Esse serviço concentra as regras matemáticas puras.
-
-Operações implementadas:
-
-- soma
-- subtração
-- multiplicação
-- divisão
-- potência
-- raiz quadrada
-- porcentagem
-
-Regras de erro:
-
-- divisão por zero retorna erro específico
-- raiz quadrada de número negativo retorna erro específico
-- resultado `NaN` ou infinito é rejeitado
-- operação não suportada retorna erro específico
-- operandos ausentes retornam erro específico
-
-Esse desenho facilita teste unitário porque a lógica fica isolada e sem dependência de HTTP.
-
-### Camada HTTP
-
-- [`backend/internal/http/server.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/http/server.go)
-
-Esse pacote cuida de:
-
-- rotas
-- middleware de CORS
-- status codes
-- serialização JSON
-- mapeamento de erro para resposta HTTP
-
-Rotas expostas:
-
-- `GET /health`
-- `POST /api/calculate`
-
-Comportamento de status:
-
-- `400 Bad Request` para payload inválido ou operação faltando/unsupported
-- `422 Unprocessable Entity` para erro de execução matemática, como divisão por zero
-- `405 Method Not Allowed` para método errado
-- `204 No Content` em `OPTIONS`
+The server intentionally depends on the concrete calculator service for this technical assessment. The HTTP and calculation boundaries are still separated, but no service interface was introduced because that was kept outside the exercise scope.
 
 ### CORS
 
-O backend responde com cabeçalhos CORS configuráveis.
+The server sends:
 
-Headers enviados:
+- `Access-Control-Allow-Origin`;
+- `Access-Control-Allow-Methods`;
+- `Access-Control-Allow-Headers`;
+- `Access-Control-Max-Age`;
+- `Vary: Origin`.
 
-- `Access-Control-Allow-Origin`
-- `Access-Control-Allow-Methods`
-- `Access-Control-Allow-Headers`
-- `Access-Control-Max-Age`
-- `Vary: Origin`
+`CORS_ORIGIN` controls the allowed origin. The default remains `*` for the local technical-assessment setup.
 
-### Docker do backend
+### Backend Docker image
 
-- [`backend/Dockerfile`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/Dockerfile)
+- [`../backend/Dockerfile`](../backend/Dockerfile)
 
-Fluxo do build:
+The build stage:
 
-- usa `golang:1.22-alpine` no estágio de build
-- copia `go.mod`, `cmd`, `internal` e `tests`
-- roda `go test ./...`
-- compila o binário Go
-- copia o binário final para `alpine:3.22`
-- roda como usuário não-root
+1. uses `golang:1.22-alpine`;
+2. copies `go.mod`, `cmd`, `internal`, and `tests`;
+3. runs `go test ./...`;
+4. builds the API binary.
 
-## Contrato da API
+The final stage copies the binary into `alpine:3.22` and runs it as a non-root user.
 
-### Healthcheck
+## API contract
+
+### Health check
 
 `GET /health`
 
-Resposta de sucesso:
+Response:
 
 ```json
 {
@@ -453,11 +360,11 @@ Resposta de sucesso:
 }
 ```
 
-### Cálculo binário
+### Binary calculation
 
 `POST /api/calculate`
 
-Exemplo:
+Request:
 
 ```json
 {
@@ -467,7 +374,7 @@ Exemplo:
 }
 ```
 
-Resposta:
+Response:
 
 ```json
 {
@@ -475,27 +382,11 @@ Resposta:
 }
 ```
 
-Outro exemplo:
+Binary operations are `add`, `subtract`, `multiply`, `divide`, and `power`.
 
-```json
-{
-  "operation": "divide",
-  "left": 10,
-  "right": 2
-}
-```
+### Unary calculation
 
-Resposta:
-
-```json
-{
-  "result": 5
-}
-```
-
-### Cálculo unário
-
-Raiz quadrada:
+Square root:
 
 ```json
 {
@@ -504,15 +395,7 @@ Raiz quadrada:
 }
 ```
 
-Resposta:
-
-```json
-{
-  "result": 3
-}
-```
-
-Porcentagem:
+Percentage:
 
 ```json
 {
@@ -521,17 +404,11 @@ Porcentagem:
 }
 ```
 
-Resposta:
+The corresponding results are `3` and `0.25`.
 
-```json
-{
-  "result": 0.25
-}
-```
+### Error responses
 
-### Erros
-
-Exemplos de erro retornados pela API:
+Division by zero:
 
 ```json
 {
@@ -539,11 +416,15 @@ Exemplos de erro retornados pela API:
 }
 ```
 
+Missing operand:
+
 ```json
 {
   "error": "value is required for this operation"
 }
 ```
+
+Invalid JSON:
 
 ```json
 {
@@ -551,227 +432,168 @@ Exemplos de erro retornados pela API:
 }
 ```
 
-## Fluxo ponta a ponta
+## End-to-end examples
 
-### Soma simples
+### Addition
 
-1. O usuário pressiona `1`, `+`, `2` e `=`.
-2. O frontend mantém o valor atual no display.
-3. Ao confirmar a operação, o frontend chama `POST /api/calculate`.
-4. O backend calcula `1 + 2`.
-5. A resposta chega como JSON.
-6. O frontend atualiza display e histórico.
+1. The user enters `1`, `+`, `2`, and `=`.
+2. The frontend keeps the current input in local state.
+3. The API client sends `POST /api/calculate`.
+4. The backend calculates `1 + 2`.
+5. The JSON result returns to the frontend.
+6. The display and local history are updated.
 
-### Raiz quadrada
+### Square root
 
-1. O usuário digita um número.
-2. O frontend converte o atalho de tecla para `√` ou usa o botão `√`.
-3. O frontend envia uma operação unária ao backend.
-4. O backend executa `sqrt`.
-5. O resultado volta como JSON e a UI é atualizada.
+1. The user enters a number and selects `√`.
+2. The frontend sends a unary `sqrt` operation.
+3. The backend validates and executes the operation.
+4. The result is returned as JSON and displayed.
 
-### Percentual
+### Percentage
 
-1. O usuário escolhe `%`.
-2. O frontend envia o valor atual como `value`.
-3. O backend divide por `100`.
-4. A UI mostra o resultado formatado.
+1. The user selects `%`.
+2. The frontend sends the current value as `value`.
+3. The backend divides it by `100`.
+4. The formatted result is displayed and added to history.
 
-## Testes
+## Testing strategy
 
-### Frontend
+### Frontend tests
 
-Testes do frontend ficam em:
+Frontend tests are located at:
 
-- [`frontend/src/lib/memory.test.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/lib/memory.test.ts)
-- [`frontend/src/lib/preferences.test.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/lib/preferences.test.ts)
-- [`frontend/src/utils/keyUtils.test.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/utils/keyUtils.test.ts)
-- [`frontend/src/services/calculatorApi.test.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/services/calculatorApi.test.ts)
+- [`../frontend/src/App/index.test.tsx`](../frontend/src/App/index.test.tsx);
+- [`../frontend/src/lib/memory.test.ts`](../frontend/src/lib/memory.test.ts);
+- [`../frontend/src/lib/number.test.ts`](../frontend/src/lib/number.test.ts);
+- [`../frontend/src/lib/preferences.test.ts`](../frontend/src/lib/preferences.test.ts);
+- [`../frontend/src/services/calculatorApi.test.ts`](../frontend/src/services/calculatorApi.test.ts);
+- [`../frontend/src/utils/keyUtils.test.ts`](../frontend/src/utils/keyUtils.test.ts).
 
-O que eles cobrem:
+The component tests cover:
 
-- manipulação de memória
-- persistência e normalização de settings
-- normalização de teclas
-- integração de API via `fetch`
+- a complete binary calculation;
+- API error display, including English negative-square-root errors;
+- adding and displaying history;
+- `M+`, `MR`, and `MC` memory flows;
+- opening settings and saving decimal places.
 
-### Backend
+The API client is mocked in component tests, so they do not require a running backend.
 
-Testes do backend ficam em:
+### Backend tests
 
-- [`backend/internal/calculator/service_test.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/calculator/service_test.go)
-- [`backend/internal/validation/request_test.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/validation/request_test.go)
-- [`backend/tests/api_test.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/tests/api_test.go)
+Backend tests are located at:
 
-O que eles cobrem:
+- [`../backend/internal/calculator/service_test.go`](../backend/internal/calculator/service_test.go);
+- [`../backend/internal/validation/request_test.go`](../backend/internal/validation/request_test.go);
+- [`../backend/tests/api_test.go`](../backend/tests/api_test.go).
 
-- regras de cálculo
-- validação de payloads
-- integração HTTP
-- CORS
-- respostas de erro e sucesso
+They cover arithmetic rules, payload validation, HTTP integration, CORS, success responses, and error status mapping.
 
-### Coverage atual
+### Current coverage
 
-Última validação executada:
+Latest validated results:
 
-- frontend: 17 testes passando em 5 arquivos
-- backend: suíte passando com cobertura total de 73.9%
+- Frontend: 24 tests in 6 files; 86.07% statements/lines, 72.54% branches, and 82.05% functions.
+- Backend: 73.9% total statement coverage.
 
-Arquivos gerados:
+Generate the reports with:
 
-- [`frontend/coverage/index.html`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/coverage/index.html)
-- [`backend/coverage.out`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/coverage.out)
-- [`backend/coverage.html`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/coverage.html)
+```bash
+npm run coverage
+```
 
-Observação importante:
+This creates frontend output under `frontend/coverage/` and backend reports at `backend/coverage.out` and `backend/coverage.html`.
 
-- a cobertura do frontend ainda está concentrada em libs, serviços e utilitários
-- os componentes visuais ainda têm espaço para testes adicionais
+## Local setup and Docker
 
-## Docker e execução local
+### Requirements
 
-### `docker-compose.yml`
+- Node.js 22+;
+- npm;
+- Go 1.22+ for running the backend without Docker;
+- Docker and Docker Compose for the complete containerized stack.
 
-- [`docker-compose.yml`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docker-compose.yml)
+### Local commands
 
-Esse arquivo sobe:
+```bash
+cd frontend
+npm install
+npm start
+```
 
-- `backend` em `http://localhost:8080`
-- `frontend` em `http://localhost:3000`
-
-Configurações relevantes:
-
-- o backend recebe `ADDR=:8080`
-- o backend recebe `CORS_ORIGIN=http://localhost:3000`
-- o frontend recebe `VITE_API_BASE_URL=http://localhost:8080`
-
-### Comandos da raiz
-
-O `package.json` da raiz funciona como orquestrador de conveniência.
-
-- `npm start`: repassa para o frontend.
-- `npm run dev`: repassa para o frontend.
-- `npm run build`: repassa para o frontend.
-- `npm run lint`: repassa para o frontend.
-- `npm test`: roda os testes do frontend e valida o backend durante o build do Docker.
-- `npm run coverage`: gera coverage do frontend e do backend.
-
-### Pontos práticos para quem não usa Go ainda
-
-Se você não quer instalar Go localmente, a forma mais simples de trabalhar com o backend é usar Docker Compose.
-
-Se você quer rodar o backend sem Docker, o comando é:
+In a second terminal:
 
 ```bash
 cd backend
 go run ./cmd/api
 ```
 
-## Uso de IA
+The frontend defaults to `http://localhost:8080` for the API.
 
-O projeto foi desenvolvido com apoio de IA generativa nesta sessão, usando o Codex como copiloto para:
+### Docker Compose
 
-- ler e interpretar os requisitos iniciais do projeto
-- mapear a base existente
-- planejar o repositório em camadas
-- implementar o backend Go
-- integrar o frontend com a API
-- adicionar testes unitários e de integração
-- configurar coverage
-- preparar Dockerfiles e `docker-compose.yml`
-- escrever e atualizar documentação
-- revisar a organização da interface e do fluxo de cálculo
+- [`../docker-compose.yml`](../docker-compose.yml)
 
-Não houve uso de outra IA externa como fonte de verdade do produto. A IA foi usada como assistente de engenharia, enquanto as decisões finais ficaram alinhadas ao objetivo e às restrições do projeto.
+Run:
 
-## Prompts e instruções que guiaram o desenvolvimento
+```bash
+docker compose up --build
+```
 
-Como esse trabalho foi feito em uma conversa longa, este documento registra os temas dos prompts principais que moldaram a implementação.
+The Compose configuration exposes:
 
-- entender o projeto inteiro e criar um documento com o que é importante
-- ler os requisitos iniciais em detalhe antes de mexer no código
-- fechar o escopo e definir a fronteira clara entre frontend e backend
-- reorganizar o repositório em `frontend/`, `backend/` e `docs/`
-- implementar o backend Go
-- ligar o frontend à API e remover o cálculo local
-- adicionar testes unitários e testes de integração/contrato
-- adicionar coverage para frontend e backend
-- fazer limpeza final, rodar lint/build/test e adicionar Docker
-- documentar setup, execução, exemplos de API e decisões de arquitetura
-- restaurar o painel de settings e a memória
-- ajustar layout, idioma padrão e teclado
-- corrigir um erro de tipagem na camada de i18n
+- backend at `http://localhost:8080`;
+- frontend at `http://localhost:3000`.
 
-Em termos práticos, os prompts foram usados para:
+It passes `CORS_ORIGIN=http://localhost:3000` to the backend and `VITE_API_BASE_URL=http://localhost:8080` to the frontend build.
 
-- guiar a análise do que já existia
-- priorizar o que deveria permanecer e o que deveria sair
-- manter a aplicação limpa, legível e idiomática
-- evitar duplicação de regra de negócio
-- transformar a aplicação em algo fácil de manter e testar
+### Root convenience scripts
 
-## Decisões de arquitetura
+The root `package.json` orchestrates common commands:
 
-- o backend é a fonte de verdade dos cálculos
-- o frontend não calcula o resultado final localmente
-- a API usa operações explícitas em vez de parser livre de expressões
-- o estado de memória e histórico é local à interface
-- preferências de UI ficam em `localStorage`
-- a interface mostra apenas o necessário para o usuário operar a calculadora
-- o contrato da API é pequeno e previsível
-- os erros são retornados em JSON e tratados no frontend
-- o Docker separa build e runtime para manter as imagens enxutas
-- o backend roda como usuário não-root dentro da imagem final
+- `npm start`: starts the frontend;
+- `npm run dev`: starts the frontend in development mode;
+- `npm run build`: builds the frontend;
+- `npm run lint`: lints the frontend;
+- `npm test`: runs frontend tests and builds the backend image, which runs backend tests;
+- `npm run coverage`: generates frontend and backend coverage reports.
 
-## Assunções do projeto
+## Design decisions and assumptions
 
-- a aplicação é usada localmente e também pode ser empacotada com Docker
-- o backend escuta em `localhost:8080` por padrão
-- o frontend consome `http://localhost:8080` por padrão
-- `English` é o idioma inicial e `pt-br` é uma opção explícita
-- a quantidade padrão de casas decimais é 6
-- a memória e o histórico não precisam sobreviver a reload de página
-- os cálculos precisam ser fáceis de explicar e de testar
-- a experiência visual deve continuar simples, sem excesso de camadas
+- The backend is the source of truth for arithmetic results.
+- The frontend does not calculate final results locally.
+- The API uses explicit operations rather than a general expression parser.
+- History and memory are local UI state.
+- UI preferences are persisted in `localStorage`.
+- English is the default language and `pt-br` is an explicit option.
+- The default API URL is `http://localhost:8080`.
+- History and memory do not need to survive page reloads.
+- The Docker backend runs as a non-root user.
+- The frontend and backend are built as separate images.
 
-## Histórico da evolução
+## AI use and prompts
 
-- o projeto saiu de uma calculadora local monolítica
-- o frontend foi refeito para consumir a API
-- o backend passou a centralizar regras e validações
-- os testes foram distribuídos entre unitários, contrato e integração leve
-- o ambiente Docker foi adicionado para reduzir o atrito de setup
+This project was developed with generative AI assistance in this session, using Codex as an engineering copilot. The final implementation and decisions were checked against the project objective and requirements.
 
-## Pontos para melhorar no futuro
+AI assistance was used for repository inspection, backend and frontend implementation, refactoring, tests, responsive styling, documentation, Docker configuration, and review of the resulting code.
 
-- adicionar mais testes de componentes no frontend
-- aumentar a cobertura do JSX visual e dos fluxos de interação
-- simplificar ainda mais a comunicação entre UI e API com uma camada de domínio compartilhado
-- adicionar um `.env.example` para documentar variáveis de ambiente
-- considerar um proxy de desenvolvimento para reduzir atrito com CORS
-- adicionar observabilidade básica no backend, como logs mais estruturados
-- separar melhor domínio, transporte e adapters se a API crescer
-- avaliar se memória e histórico precisam de persistência opcional
-- adicionar snapshot ou visual regression se o layout continuar evoluindo
-- criar documentação de API mais formal, se o escopo aumentar
+Representative prompts and instructions used during the work included:
 
-## Arquivos mais importantes para consulta rápida
+- review `frontend/` and `backend/` as a senior engineer for clean design, maintainability, and testability;
+- remove unused frontend dependencies and validate with install, build, and tests;
+- investigate HTTP status mapping for validation and mathematical execution errors;
+- extract calculator behavior from the App shell into a custom hook;
+- add component tests with Testing Library while mocking `calculatorApi.ts`;
+- move calculator error messages into the English and Portuguese i18n files;
+- improve mobile layout, touch targets, keypad placement, and responsive breakpoints;
+- compare the documentation with the current code and remove contradictions;
+- run the complete frontend and backend validation suite before delivery.
 
-- [`README.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/README.md)
-- [`frontend/src/App/index.tsx`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/App/index.tsx)
-- [`frontend/src/services/calculatorApi.ts`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/frontend/src/services/calculatorApi.ts)
-- [`backend/cmd/api/main.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/cmd/api/main.go)
-- [`backend/internal/http/server.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/http/server.go)
-- [`backend/internal/calculator/service.go`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/backend/internal/calculator/service.go)
+These are summaries of the iterative task prompts used in the conversation; no external AI service was used as a source of truth for the product.
 
-## Resumo final
+## Possible future improvements
 
-Se alguém quiser entender este projeto de ponta a ponta, a sequência de leitura mais útil é:
+For this technical assessment, the HTTP server intentionally depends on the concrete calculator service, and the default `CORS_ORIGIN` remains `*`. Introducing a small calculator-service interface and requiring a stricter production CORS configuration are conscious out-of-scope improvements that can be revisited if the application grows beyond this exercise.
 
-1. `README.md`
-2. este arquivo, `docs/doc-tech.md`
-3. `frontend/src/App/index.tsx`
-4. `backend/cmd/api/main.go`
-
-Essa ordem mostra a visão geral, a arquitetura e finalmente a implementação concreta.
+Other possible follow-ups include optional persistence for history and memory, additional frontend state-transition tests, stronger API documentation, and structured backend logging.

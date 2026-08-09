@@ -1,55 +1,49 @@
 # Backend
 
-Microservice em Go responsavel pelos calculos da aplicacao.
+Go microservice responsible for validation and arithmetic calculations.
 
-Veja tambem a documentacao principal em
-[`docs/doc-tech.md`](../docs/doc-tech.md).
+The main technical documentation is [`docs/doc-tech.md`](../docs/doc-tech.md).
 
-## Intencao da estrutura
+## Structure
 
-- `cmd/api` para o ponto de entrada da aplicacao
-- `internal/calculator` para as regras de negocio
-- `internal/http` para handlers, rotas e transporte
-- `internal/validation` para validacao de payloads
-- `tests` para testes de integracao e contrato
+- `cmd/api`: application entry point.
+- `internal/calculator`: arithmetic rules and domain errors.
+- `internal/domain`: API contracts and operation definitions.
+- `internal/http`: routes, handlers, CORS, status codes, and JSON responses.
+- `internal/validation`: request decoding and validation.
+- `tests`: HTTP integration and contract tests.
 
-## Responsabilidade
+The backend is the source of truth for the calculations exposed by the API. The frontend consumes this API and does not contain the final arithmetic implementation.
 
-O backend é a fonte de verdade para os cálculos expostos pela API.
-O frontend consome essa API e não contém a lógica final de cálculo.
-
-## Como rodar
+## Run locally
 
 ```bash
 go run ./cmd/api
 ```
 
-Variaveis de ambiente uteis:
+Environment variables:
 
-- `ADDR` para definir o endereco completo, por exemplo `:8080`
-- `PORT` como alternativa quando voce quiser passar apenas a porta
-- `CORS_ORIGIN` para restringir o `Access-Control-Allow-Origin`
+- `ADDR`: complete listen address, for example `:8080`.
+- `PORT`: alternative way to provide only the port.
+- `CORS_ORIGIN`: value for `Access-Control-Allow-Origin`.
 
 ## Docker
 
-O backend tambem pode ser executado via `docker compose up --build` a partir da raiz do repositorio.
-O build da imagem executa `go test ./...` antes de compilar a API.
+Run `docker compose up --build` from the repository root. The backend image runs `go test ./...` before compiling the API and exposes port `8080`.
 
-## Testes
+## Tests and coverage
 
 ```bash
 go test ./...
 ```
 
-## Coverage
-
-Na raiz do repositório:
+From the repository root, generate the backend coverage report with:
 
 ```bash
 npm run coverage:backend
 ```
 
-Isso executa os testes do backend dentro de um container Go e gera `coverage.out` e `coverage.html` em `backend/`.
+This runs the tests inside a Go container and generates `backend/coverage.out` and `backend/coverage.html`.
 
 ## Endpoints
 

@@ -5,17 +5,17 @@ import { StyledDisplay } from "./style";
 
 interface DisplayProps {
   value: string;
-  onKeyPress: (key: string) => void;
+  onKeyDown: (key: string) => void;
 }
 
-const Display: React.FC<DisplayProps> = ({ value, onKeyPress }) => {
+const Display: React.FC<DisplayProps> = ({ value, onKeyDown }) => {
   const { t } = useI18n();
-  const formatted = formatDisplayValue(value);
+  const formatted = formatDisplayValue(value, t.errors.display);
 
   // Captures keyboard input.
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    onKeyPress(e.key);
+    onKeyDown(e.key);
   };
 
   // Read-only field that displays the formatted value and captures keyboard input.

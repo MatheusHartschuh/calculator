@@ -8,8 +8,8 @@ export const Page = styled.main`
   justify-content: center;
   padding: ${theme.spacing(3)};
   background:
-    radial-gradient(circle at top left, rgba(72, 175, 168, 0.14), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(178, 0, 255, 0.08), transparent 28%),
+    radial-gradient(circle at top left, ${theme.colors.backgroundGlowBlue}, transparent 30%),
+    radial-gradient(circle at bottom right, ${theme.colors.backgroundGlowPurple}, transparent 28%),
     ${theme.colors.background};
 
   @media (max-width: ${theme.breakpoints.mobile}) {

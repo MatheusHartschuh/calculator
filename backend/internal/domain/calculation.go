@@ -46,9 +46,9 @@ func (o Operation) RequiresSingleOperand() bool {
 // CalculationRequest is the API contract for /api/calculate.
 type CalculationRequest struct {
 	Operation Operation `json:"operation"`
-	Left      *float64   `json:"left,omitempty"`
-	Right     *float64   `json:"right,omitempty"`
-	Value     *float64   `json:"value,omitempty"`
+	Left      *float64  `json:"left,omitempty"`
+	Right     *float64  `json:"right,omitempty"`
+	Value     *float64  `json:"value,omitempty"`
 }
 
 // CalculationResponse is returned on successful calculations.
@@ -66,4 +66,3 @@ type HealthResponse struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
-

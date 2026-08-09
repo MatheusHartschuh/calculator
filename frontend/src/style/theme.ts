@@ -12,6 +12,10 @@ export const theme = {
     text: "#333333",
     white: "#FFFFFF",
     background: "#F5F5F5",
+    backgroundGlowBlue: "rgba(72, 175, 168, 0.14)",
+    backgroundGlowPurple: "rgba(178, 0, 255, 0.08)",
+    overlay: "rgba(15, 23, 42, 0.45)",
+    border: "rgba(51, 51, 51, 0.18)",
   },
   font: {
     family: "'Segoe UI', Roboto, Arial, sans-serif",
@@ -32,4 +36,5 @@ export const theme = {
   },
   borderRadius: "8px",
   boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+  modalBoxShadow: "0 24px 60px rgba(15, 23, 42, 0.24)",
 };

@@ -1,113 +1,93 @@
-# Calculadora
+# Calculator
 
-Aplicação full-stack de calculadora com frontend em React + TypeScript e backend em Go.
+Full-stack calculator application with a React + TypeScript frontend and a Go backend microservice.
 
-O backend é a fonte de verdade dos cálculos. O frontend cuida da interface, do histórico local, da memória e das preferências de idioma/casas decimais.
+The backend is the source of truth for arithmetic operations. The frontend owns the user interface, local history, memory, preferences, and interaction state.
 
-Documentação principal:
+For the complete technical documentation, see [`docs/doc-tech.md`](docs/doc-tech.md).
 
-- [`docs/doc-tech.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/doc-tech.md)
+## Project structure
 
-## Estrutura do projeto
+- `frontend/`: React/Vite application.
+- `backend/`: Go REST API and calculation service.
+- `docs/`: technical documentation.
+- `docker-compose.yml`: local orchestration for both services.
+- `package.json`: convenience scripts for the repository.
 
-- `frontend/` aplicação React/Vite
-- `backend/` microservice em Go
-- `docs/` documentação técnica principal
-- `docker-compose.yml` orquestração local dos dois serviços
-- `package.json` scripts de conveniência na raiz
-
-## Requisitos
+## Requirements
 
 - Node.js 22+
 - npm
-- Go 1.22+ se você for rodar o backend sem Docker
-- Docker e Docker Compose se quiser subir tudo com um comando
+- Go 1.22+ when running the backend without Docker
+- Docker and Docker Compose when running the complete stack in containers
 
 ## Setup
 
-Instale as dependências do frontend:
+Install the frontend dependencies:
 
 ```bash
 cd frontend
 npm install
 ```
 
-Se você for rodar o backend localmente sem Docker, basta ter Go 1.22+ disponível. Não há dependências adicionais além do módulo Go padrão do projeto.
+The backend has no external Go dependencies beyond the module declared in `backend/go.mod`.
 
-## Como rodar o frontend
-
-Em um terminal:
+## Run the frontend
 
 ```bash
 cd frontend
 npm start
 ```
 
-Ou pela raiz, depois que as dependências do frontend estiverem instaladas:
+The root convenience script can also be used after installing the frontend dependencies:
 
 ```bash
 npm start
 ```
 
-Observações:
+The frontend uses `http://localhost:8080` as the default API URL. Set `VITE_API_BASE_URL` during the frontend build to target another API.
 
-- o `npm start` da raiz apenas repassa a execução para `frontend/`
-- o frontend espera o backend em `http://localhost:8080` por padrão
-- se você mudar a API, ajuste `VITE_API_BASE_URL`
+## Run the backend
 
-## Como rodar o backend
-
-Em outro terminal:
+In a second terminal:
 
 ```bash
 cd backend
 go run ./cmd/api
 ```
 
-Variáveis de ambiente úteis:
+Environment variables:
 
-- `ADDR` define o endereço completo, por exemplo `:8080`
-- `PORT` permite informar só a porta
-- `CORS_ORIGIN` controla a origem permitida no CORS
+- `ADDR`: complete listen address, for example `:8080`.
+- `PORT`: alternative way to provide only the port.
+- `CORS_ORIGIN`: value for `Access-Control-Allow-Origin`.
 
-Endpoints disponíveis:
+Available endpoints:
 
 - `GET /health`
 - `POST /api/calculate`
 
-## Como rodar com Docker
+## Run with Docker
 
 ```bash
 docker compose up --build
 ```
 
-Depois disso:
+The services are then available at:
 
-- frontend: `http://localhost:3000`
-- backend: `http://localhost:8080`
-- healthcheck: `http://localhost:8080/health`
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8080`
+- Health check: `http://localhost:8080/health`
 
-O que cada imagem faz:
-
-- a imagem do backend executa `go test ./...` durante o build e depois compila a API
-- a imagem do frontend executa `npm test` e `npm run build` durante o build
-- o frontend final roda em Nginx com fallback de SPA para `index.html`
-
-Variáveis relevantes:
-
-- `ADDR` define o endereço de escuta do backend
-- `CORS_ORIGIN` define qual origem pode acessar a API
-- `VITE_API_BASE_URL` permite apontar o frontend para outra API no build
+The backend image runs `go test ./...` before compiling the API. The frontend image runs `npm test` and `npm run build`, then serves the static application with Nginx.
 
 ## API examples
 
-### Healthcheck
+### Health check
 
 ```bash
 curl http://localhost:8080/health
 ```
-
-Resposta:
 
 ```json
 {
@@ -116,7 +96,7 @@ Resposta:
 }
 ```
 
-### Soma
+### Addition
 
 ```bash
 curl -X POST http://localhost:8080/api/calculate \
@@ -124,15 +104,13 @@ curl -X POST http://localhost:8080/api/calculate \
   -d '{"operation":"add","left":10,"right":5}'
 ```
 
-Resposta:
-
 ```json
 {
   "result": 15
 }
 ```
 
-### Raiz quadrada
+### Square root
 
 ```bash
 curl -X POST http://localhost:8080/api/calculate \
@@ -140,15 +118,13 @@ curl -X POST http://localhost:8080/api/calculate \
   -d '{"operation":"sqrt","value":9}'
 ```
 
-Resposta:
-
 ```json
 {
   "result": 3
 }
 ```
 
-### Porcentagem
+### Percentage
 
 ```bash
 curl -X POST http://localhost:8080/api/calculate \
@@ -156,15 +132,13 @@ curl -X POST http://localhost:8080/api/calculate \
   -d '{"operation":"percentage","value":25}'
 ```
 
-Resposta:
-
 ```json
 {
   "result": 0.25
 }
 ```
 
-### Erro
+### Execution error
 
 ```bash
 curl -X POST http://localhost:8080/api/calculate \
@@ -172,68 +146,71 @@ curl -X POST http://localhost:8080/api/calculate \
   -d '{"operation":"divide","left":10,"right":0}'
 ```
 
-Resposta possível:
-
 ```json
 {
   "error": "division by zero"
 }
 ```
 
-## Testes
+Supported operations are `add`, `subtract`, `multiply`, `divide`, `power`, `sqrt`, and `percentage`.
 
-Frontend:
+## Tests and coverage
+
+Run frontend tests directly:
 
 ```bash
 cd frontend
 npm test
 ```
 
-Backend:
+Run backend tests directly:
 
 ```bash
 cd backend
 go test ./...
 ```
 
-Raiz do repositório:
+Run the repository test command:
 
 ```bash
 npm test
 ```
 
-Esse comando roda os testes do frontend e valida o backend durante o build do Docker.
+This runs the frontend suite and validates the backend during the Docker build.
 
-## Coverage
+Generate coverage reports for both layers:
 
 ```bash
 npm run coverage
 ```
 
-Isso gera:
+The current validated results are:
 
-- coverage do frontend com Vitest em `frontend/coverage/`
-- coverage do backend em `backend/coverage.out` e `backend/coverage.html`
+- Frontend: 24 tests in 6 files; 86.07% statements/lines, 72.54% branches, and 82.05% functions.
+- Backend: 73.9% total statement coverage.
 
-## Decisões de design
+Frontend coverage is generated under `frontend/coverage/`. Backend coverage is generated as `backend/coverage.out` and `backend/coverage.html`.
 
-- o backend é a fonte de verdade para os cálculos
-- o frontend não faz o cálculo final localmente
-- as operações são explícitas na API, em vez de um parser genérico de expressões
-- o histórico e a memória são estados locais da interface
-- as preferências de idioma e casas decimais ficam em `localStorage`
-- o idioma padrão é inglês e `pt-br` é uma opção disponível
-- o deploy local com Docker usa imagens separadas para frontend e backend
-- o backend roda em uma imagem final pequena e como usuário não-root
+## Design decisions
 
-## Assunções
+- The backend is the source of truth for final arithmetic results.
+- The frontend does not reimplement the final mathematical calculation locally.
+- The API uses explicit operations instead of a free-form expression parser.
+- History and memory are local UI state; they are not sent to the backend.
+- Language and decimal-place preferences are persisted in `localStorage`.
+- English is the default language, with Brazilian Portuguese available as an explicit option.
+- Docker uses separate build/runtime flows for the frontend and backend.
+- The final backend image runs as a non-root user.
+- The keypad is responsive: below 1024px the workspace becomes a single column, and mobile buttons keep a minimum 44x44px touch area.
 
-- o usuário final vai subir o backend antes de usar o frontend fora do Docker
-- `http://localhost:8080` é a URL padrão da API
-- `http://localhost:3000` é a URL padrão do frontend em Docker Compose
-- memória e histórico não precisam persistir entre recargas da página
-- o foco da aplicação é previsibilidade e manutenção, não um parser matemático avançado
+## Assumptions
 
-## Documentação adicional
+- The backend must be running before using the frontend outside Docker.
+- `http://localhost:8080` is the default API URL.
+- `http://localhost:3000` is the default Docker Compose frontend URL.
+- History and memory do not need to survive a page reload.
+- Predictable, testable operations are preferred over a more complex expression parser.
 
-Consulte [`docs/doc-tech.md`](/home/matheuspalavrasapplicado/Documentos/Backup%20Manual/calculadora-main/docs/doc-tech.md) para a arquitetura, o contrato da API, os testes, o Docker e o histórico técnico do projeto.
+## Documentation
+
+See [`docs/doc-tech.md`](docs/doc-tech.md) for the architecture, API contract, testing strategy, Docker setup, AI-use disclosure, and technical decisions.

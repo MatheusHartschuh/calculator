@@ -18,7 +18,7 @@ func main() {
 	server := &http.Server{
 		Addr:              addr,
 		Handler:           api.NewServer(calculator.New(), corsOrigin).Handler(),
-		ReadHeaderTimeout:  5 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	log.Printf("calculator API listening on %s", addr)
@@ -48,4 +48,3 @@ func getenv(key, fallback string) string {
 	}
 	return fallback
 }
-

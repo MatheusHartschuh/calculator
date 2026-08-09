@@ -10,7 +10,7 @@ type KeypadProps = {
 };
 
 const Keypad: React.FC<KeypadProps> = ({ onButtonClick, disabled }) => {
-  const keypadLayout: ({ label: string; type?: ButtonType } | null)[][] = [
+  const keypadLayout: { label: string; type?: ButtonType; className?: string }[][] = [
     [
       { label: "MC", type: "memory" },
       { label: "MR", type: "memory" },
@@ -44,14 +44,12 @@ const Keypad: React.FC<KeypadProps> = ({ onButtonClick, disabled }) => {
     [
       { label: "0", type: "number" },
       { label: ",", type: "number" },
-      { label: "=", type: "action" },
+      { label: "x²", type: "func" },
       { label: "√", type: "func" },
     ],
     [
-      { label: "x²", type: "func" },
+      { label: "=", type: "action", className: "keypad-wide" },
       { label: "^", type: "operator" },
-      null,
-      null,
     ],
   ];
 
@@ -64,6 +62,7 @@ const Keypad: React.FC<KeypadProps> = ({ onButtonClick, disabled }) => {
           label={btn.label}
           onClick={onButtonClick}
           type={btn.type}
+          className={btn.className}
           disabled={disabled}
         />
       ) : (

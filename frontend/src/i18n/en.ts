@@ -19,6 +19,11 @@ const en: Translations = {
   display: {
     ariaLabel: "Calculator display",
   },
+  errors: {
+    display: "Error",
+    invalidNumber: "Invalid number",
+    unexpectedCalculation: "Unexpected error while calculating",
+  },
   settings: {
     title: "Settings",
     decimalsLabel: "Default decimals:",

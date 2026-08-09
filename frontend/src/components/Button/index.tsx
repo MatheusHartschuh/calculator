@@ -20,23 +20,17 @@ const LABEL_STYLES: Record<string, { background: string; color: string }> = {
   "*": { background: theme.colors.green, color: theme.colors.white },
   "x²": { background: theme.colors.green, color: theme.colors.white },
   "^": { background: theme.colors.green, color: theme.colors.white },
-  "^2": { background: theme.colors.green, color: theme.colors.white },
   "-": { background: theme.colors.red, color: theme.colors.white },
   "/": { background: theme.colors.red, color: theme.colors.white },
   "√": { background: theme.colors.red, color: theme.colors.white },
   "sqrt": { background: theme.colors.red, color: theme.colors.white },
   "=": { background: theme.colors.blue, color: theme.colors.white },
   "+/-": { background: theme.colors.blue, color: theme.colors.white },
-  "π": { background: theme.colors.blue, color: theme.colors.white },
-  "pi": { background: theme.colors.blue, color: theme.colors.white },
   "C": { background: theme.colors.orange, color: theme.colors.white },
   "AC": { background: theme.colors.orange, color: theme.colors.white },
   "(": { background: theme.colors.orange, color: theme.colors.white },
   ")": { background: theme.colors.orange, color: theme.colors.white },
   ",": { background: theme.colors.numeric, color: theme.colors.text },
-  "≅": { background: theme.colors.numeric, color: theme.colors.text },
-  "Trig": { background: theme.colors.purple, color: theme.colors.white },
-  "Close": { background: theme.colors.red, color: theme.colors.white },
 };
 
 // Defines styles by button type.
