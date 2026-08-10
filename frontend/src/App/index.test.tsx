@@ -68,6 +68,21 @@ describe("calculator application", () => {
     expect(calculatorApiMocks.calculateBinary).toHaveBeenCalledWith("add", 2, 3);
   });
 
+  it("completes division through the keypad", async () => {
+    calculatorApiMocks.calculateBinary.mockResolvedValue(4);
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await pressCalculatorButton(user, "8");
+    await pressCalculatorButton(user, "Division");
+    await pressCalculatorButton(user, "2");
+    await pressCalculatorButton(user, "Equals");
+
+    await waitFor(() => expect(getDisplay().value).toBe("4"));
+    expect(calculatorApiMocks.calculateBinary).toHaveBeenCalledWith("divide", 8, 2);
+  });
+
   it("adds and renders a completed calculation in history", async () => {
     calculatorApiMocks.calculateBinary.mockResolvedValue(5);
     const user = userEvent.setup();

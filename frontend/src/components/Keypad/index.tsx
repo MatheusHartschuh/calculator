@@ -50,6 +50,7 @@ const Keypad: React.FC<KeypadProps> = ({ onButtonClick, disabled }) => {
     [
       { label: "=", type: "action", className: "keypad-wide" },
       { label: "^", type: "operator" },
+      { label: "/", type: "operator" },
     ],
   ];
 

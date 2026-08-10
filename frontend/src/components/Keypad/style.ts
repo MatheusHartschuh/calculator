@@ -12,7 +12,7 @@ export const KeypadContainer = styled.div`
   }
 
   & .keypad-wide {
-    grid-column: span 3;
+    grid-column: span 2;
   }
 `;
 
