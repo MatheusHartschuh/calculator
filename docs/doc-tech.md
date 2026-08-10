@@ -414,4 +414,6 @@ For this technical assessment, the HTTP server intentionally depends on the conc
 
 `npm audit` also reports vulnerabilities in esbuild and vitest's dependency chain, these are devDependencies used only for local development and testing, not part of the shipped runtime, and the available fix requires a breaking vitest upgrade that was intentionally deferred to avoid destabilizing the test suite.
 
+The current model handles operations step by step rather than full expressions like `2 + 3 * 4`, which keeps the API simple but limits input fluidity. A more expression-aware frontend, or a dedicated expression endpoint, would be a natural next step. On the error side, the backend already distinguishes division by zero from a negative square root, but the frontend still collapses both into one generic "Error" state, surfacing that distinction with clearer wording is a quick UX win.
+
 Other possible follow-ups include optional persistence for history and memory, additional frontend state-transition tests, stronger API documentation, and structured backend logging.
