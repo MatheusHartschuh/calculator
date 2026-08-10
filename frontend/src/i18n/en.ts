@@ -18,6 +18,7 @@ const en: Translations = {
   },
   display: {
     ariaLabel: "Calculator display",
+    pendingOperationAriaLabel: "Pending operation",
   },
   errors: {
     display: "Error",

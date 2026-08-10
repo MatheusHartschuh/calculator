@@ -32,6 +32,10 @@ function getDisplay(name = "Calculator display") {
   return screen.getByRole("textbox", { name }) as HTMLInputElement;
 }
 
+function getPendingOperator() {
+  return screen.getByRole("status", { name: "Pending operation" });
+}
+
 async function pressCalculatorButton(user: ReturnType<typeof userEvent.setup>, name: string) {
   await user.click(screen.getByRole("button", { name }));
 }
@@ -76,6 +80,23 @@ describe("calculator application", () => {
     await pressCalculatorButton(user, "Equals");
 
     expect(await screen.findByText("2 + 3 = 5")).toBeTruthy();
+  });
+
+  it("keeps the selected operator visible until the calculation is completed", async () => {
+    calculatorApiMocks.calculateBinary.mockResolvedValue(5);
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await pressCalculatorButton(user, "3");
+    await pressCalculatorButton(user, "Addition");
+    expect(getPendingOperator().textContent).toBe("+");
+
+    await pressCalculatorButton(user, "2");
+    expect(getPendingOperator().textContent).toBe("+");
+
+    await pressCalculatorButton(user, "Equals");
+    await waitFor(() => expect(getPendingOperator().textContent).toBe(""));
   });
 
   it("displays an API error in the calculator display", async () => {

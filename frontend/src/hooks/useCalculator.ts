@@ -369,6 +369,7 @@ export function useCalculator({ decimalPlaces, errorMessages }: UseCalculatorOpt
 
   return {
     displayValue,
+    pendingOperator: pendingOperation ? OPERATOR_SYMBOLS[pendingOperation] : null,
     history,
     memory,
     isBusy,

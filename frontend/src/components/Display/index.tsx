@@ -1,14 +1,15 @@
 import React from "react";
 import { formatDisplayValue } from "../../utils/helper";
 import { useI18n } from "../../i18n";
-import { StyledDisplay } from "./style";
+import { DisplayRow, OperatorDisplay, StyledDisplay } from "./style";
 
 interface DisplayProps {
   value: string;
+  pendingOperator: string | null;
   onKeyDown: (key: string) => void;
 }
 
-const Display: React.FC<DisplayProps> = ({ value, onKeyDown }) => {
+const Display: React.FC<DisplayProps> = ({ value, pendingOperator, onKeyDown }) => {
   const { t } = useI18n();
   const formatted = formatDisplayValue(value, t.errors.display);
 
@@ -20,13 +21,22 @@ const Display: React.FC<DisplayProps> = ({ value, onKeyDown }) => {
 
   // Read-only field that displays the formatted value and captures keyboard input.
   const displayElement = (
-    <StyledDisplay
-      type="text"
-      value={formatted}
-      onKeyDown={handleKeyDown}
-      readOnly
-      aria-label={t.display.ariaLabel}
-    />
+    <DisplayRow>
+      <StyledDisplay
+        type="text"
+        value={formatted}
+        onKeyDown={handleKeyDown}
+        readOnly
+        aria-label={t.display.ariaLabel}
+      />
+      <OperatorDisplay
+        role="status"
+        aria-label={t.display.pendingOperationAriaLabel}
+        aria-live="polite"
+      >
+        {pendingOperator ?? ""}
+      </OperatorDisplay>
+    </DisplayRow>
   );
 
   return displayElement;

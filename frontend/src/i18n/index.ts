@@ -42,6 +42,7 @@ export interface Translations {
   };
   display: {
     ariaLabel: string;
+    pendingOperationAriaLabel: string;
   };
   errors: {
     display: string;

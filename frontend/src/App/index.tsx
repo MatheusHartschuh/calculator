@@ -25,6 +25,7 @@ function AppShell({ settings, onSettingsChange }: AppShellProps) {
     history,
     isBusy,
     memory,
+    pendingOperator,
     recallMemoryValue,
     removeMemoryEntry,
   } = useCalculator({
@@ -56,7 +57,11 @@ function AppShell({ settings, onSettingsChange }: AppShellProps) {
   const calculatorCard = (
     <CalculatorCard>
       {calculatorHeader}
-      <Display value={displayValue} onKeyDown={(key) => void handleButtonClick(key)} />
+      <Display
+        value={displayValue}
+        pendingOperator={pendingOperator}
+        onKeyDown={(key) => void handleButtonClick(key)}
+      />
       <Keypad onButtonClick={(key) => void handleButtonClick(key)} disabled={isBusy} />
     </CalculatorCard>
   );

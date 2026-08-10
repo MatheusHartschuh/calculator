@@ -18,6 +18,7 @@ const ptBr: Translations = {
   },
   display: {
     ariaLabel: "Display da calculadora",
+    pendingOperationAriaLabel: "Operação pendente",
   },
   errors: {
     display: "Erro",
